@@ -34,22 +34,7 @@ import { useRamadanDate } from "@/hooks/use-ramadan-date";
 import { SPIRITUAL_GOALS } from "@/config/spiritual-goals";
 import { PageHeader } from "@/components/page-header";
 import { ProgressRing } from "@/components/ui/progress-ring";
-
-// ─── Page-specific helpers ──────────────────────────────────────────────────
-
-function calculateStreak(fasting: boolean[]): number {
-  let streak = 0;
-  const todayIdx = getRamadanDayIndex();
-  const lastChecked = todayIdx >= 0 ? todayIdx : RAMADAN_2026.TOTAL_DAYS - 1;
-  for (let i = lastChecked; i >= 0; i--) {
-    if (fasting[i]) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  return streak;
-}
+import { calculateStreak } from "@/lib/streak";
 
 // ─── Component ──────────────────────────────────────────────────────────────
 

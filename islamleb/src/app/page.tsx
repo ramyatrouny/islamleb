@@ -16,11 +16,9 @@ import {
   Quote,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RAMADAN_2026 } from "@/lib/constants";
-import { getTimeRemaining, getRamadanDay, getTodayIftar, isRamadan } from "@/lib/date-utils";
 import { fetchPrayerTimes } from "@/lib/api/aladhan";
 import { ramadanHadiths } from "@/lib/hadith-data";
-import type { TimeRemaining } from "@/lib/types";
+import { computeCountdownState } from "@/lib/countdown";
 
 // --- Quick Access Items (page-specific UI config) ---
 const quickAccessItems = [
@@ -61,34 +59,6 @@ const quickAccessItems = [
     href: "/calendar",
   },
 ];
-
-// --- Compute countdown state using shared utilities ---
-function computeCountdownState(maghribTime?: string | null): {
-  phase: "before" | "during" | "after";
-  timeLeft: TimeRemaining;
-  ramadanDay: number;
-} {
-  const now = new Date();
-  if (now < RAMADAN_2026.START) {
-    return {
-      phase: "before",
-      timeLeft: getTimeRemaining(RAMADAN_2026.START),
-      ramadanDay: 1,
-    };
-  } else if (isRamadan(now)) {
-    const iftar = getTodayIftar(maghribTime ?? undefined);
-    return {
-      phase: "during",
-      timeLeft: now < iftar ? getTimeRemaining(iftar) : { days: 0, hours: 0, minutes: 0, seconds: 0 },
-      ramadanDay: getRamadanDay(now),
-    };
-  }
-  return {
-    phase: "after",
-    timeLeft: { days: 0, hours: 0, minutes: 0, seconds: 0 },
-    ramadanDay: 1,
-  };
-}
 
 // --- Helper: pick a daily hadith based on day-of-year ---
 function getDailyHadithIndex(): number {
