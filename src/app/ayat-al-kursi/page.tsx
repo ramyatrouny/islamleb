@@ -59,7 +59,7 @@ export default function AyatAlKursiPage() {
         <motion.div variants={fadeUpItem}>
           <PageHeader
             title="آية الكرسي"
-            subtitle="سورة البقرة — الآية ٢٥٥"
+            subtitle="سورة البقرة — الآية 255"
             icon={ShieldCheck}
           />
         </motion.div>
@@ -108,7 +108,7 @@ export default function AyatAlKursiPage() {
         {/* Surah & Ayah reference */}
         <motion.div variants={fadeUpItem} className="mt-6 text-center">
           <span className="inline-block rounded-full border border-[#d4a574]/20 bg-[#d4a574]/5 px-5 py-2 text-sm text-[#d4a574]">
-            سورة البقرة — الآية ٢٥٥
+            سورة البقرة — الآية 255
           </span>
         </motion.div>
 
@@ -124,7 +124,7 @@ export default function AyatAlKursiPage() {
                 className="flex items-start gap-3 rounded-xl border border-[#d4a574]/10 bg-card p-4"
               >
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#d4a574]/10 text-sm font-bold text-[#d4a574]">
-                  {["١", "٢", "٣"][i]}
+                  {["1", "2", "3"][i]}
                 </span>
                 <p className="text-[15px] leading-relaxed text-muted-foreground">
                   {virtue}

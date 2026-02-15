@@ -12,8 +12,6 @@ import {
   TrendingUp,
   RotateCcw,
   Star,
-  Download,
-  Upload,
 } from "lucide-react";
 import {
   Card,
@@ -77,9 +75,6 @@ export default function TrackerPage() {
   const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  // ── File input ref for import ─────────────────────────────────────────
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Ramadan date info ───────────────────────────────────────────────────
   const { dayIndex: todayIndex, daysRemaining } = useRamadanDate();
@@ -299,7 +294,7 @@ export default function TrackerPage() {
           <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-xl text-center gold-gradient-text font-(family-name:--font-amiri)">
-                تقويم الصيام - رمضان ١٤٤٧
+                تقويم الصيام - رمضان 1447
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -568,86 +563,6 @@ export default function TrackerPage() {
           </Card>
         </motion.section>
 
-        {/* ─── Data Export / Import ──────────────────────────────────── */}
-        <motion.section
-          variants={sectionReveal}
-          initial="hidden"
-          animate="visible"
-          className="mb-10"
-        >
-          <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-lg text-center gold-gradient-text font-(family-name:--font-amiri)">
-                إدارة البيانات
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex flex-wrap justify-center gap-3">
-                  <Button
-                    variant="outline"
-                    className="gap-2 border-[#2d6a4f]/40 text-[#2d6a4f] hover:bg-[#2d6a4f]/10"
-                    aria-label="تصدير البيانات كملف JSON"
-                    onClick={() => {
-                      const data = localStorage.getItem("islamleb-ramadan-2026");
-                      if (!data) return;
-                      const blob = new Blob([data], { type: "application/json" });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = "islamleb-ramadan-2026.json";
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                    }}
-                  >
-                    <Download className="size-4" />
-                    تصدير البيانات
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="gap-2 border-[#d4a574]/40 text-[#d4a574] hover:bg-[#d4a574]/10"
-                    aria-label="استيراد البيانات من ملف JSON"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="size-4" />
-                    استيراد البيانات
-                  </Button>
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".json,application/json"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        try {
-                          const text = event.target?.result as string;
-                          JSON.parse(text); // validate JSON
-                          localStorage.setItem("islamleb-ramadan-2026", text);
-                          window.location.reload();
-                        } catch {
-                          alert("الملف غير صالح. يرجى اختيار ملف JSON صحيح.");
-                        }
-                      };
-                      reader.readAsText(file);
-                      e.target.value = "";
-                    }}
-                  />
-                </div>
-
-                <p className="text-xs text-muted-foreground text-center">
-                  تنبيه: الاستيراد سيحل محل جميع البيانات الحالية
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.section>
       </div>
     </div>
   );

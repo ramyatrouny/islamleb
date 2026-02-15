@@ -26,7 +26,7 @@ export default function Header() {
                 إسلام لبنان
               </span>
               <span className="text-[10px] leading-tight text-muted-foreground">
-                رمضان ٢٠٢٦ | ١٤٤٧ هـ
+                رمضان 2026 | 1447 هـ
               </span>
             </div>
           </Link>
@@ -129,7 +129,7 @@ export default function Header() {
               {/* Drawer Footer */}
               <div className="absolute bottom-0 start-0 end-0 border-t border-border px-4 py-4">
                 <p className="text-center text-xs text-muted-foreground">
-                  رمضان ٢٠٢٦ | ١٤٤٧ هـ
+                  رمضان 2026 | 1447 هـ
                 </p>
                 <p className="mt-1 text-center text-xs text-muted-foreground">
                   تقبل الله منا ومنكم

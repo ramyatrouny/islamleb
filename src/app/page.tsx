@@ -299,7 +299,7 @@ export default function HomePage() {
           className="text-xl md:text-2xl"
           style={{ color: "rgba(212,165,116,0.7)" }}
         >
-          رمضان ٢٠٢٦ | ١٤٤٧ هـ
+          رمضان 2026 | 1447 هـ
         </motion.p>
       </section>
 
@@ -544,8 +544,8 @@ export default function HomePage() {
             className="text-sm leading-relaxed md:text-base"
             style={{ color: "rgba(232,232,237,0.75)" }}
           >
-            رمضان ٢٠٢٦ يبدأ يوم الأربعاء ١٨ فبراير ٢٠٢٦ وينتهي يوم الخميس
-            ١٩ مارس ٢٠٢٦
+            رمضان 2026 يبدأ يوم الأربعاء 18 فبراير 2026 وينتهي يوم الخميس
+            19 مارس 2026
           </p>
           <motion.div
             animate={{ rotate: [360, 0] }}

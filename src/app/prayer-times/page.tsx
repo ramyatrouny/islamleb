@@ -238,7 +238,7 @@ export default function PrayerTimesPage() {
     const timeoutId = setTimeout(() => {
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
         new Notification("IslamLeb", {
-          body: `صلاة ${prayerArabic} بعد ٥ دقائق`,
+          body: `صلاة ${prayerArabic} بعد 5 دقائق`,
           dir: "rtl",
           lang: "ar",
         });

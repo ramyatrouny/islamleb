@@ -3,7 +3,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 
 export const metadata: Metadata = {
   title: "مواقيت الصلاة | إسلام لبنان",
-  description: "مواقيت الصلاة اليومية لجميع المدن اللبنانية مع أوقات الإمساك والإفطار في رمضان ١٤٤٧",
+  description: "مواقيت الصلاة اليومية لجميع المدن اللبنانية مع أوقات الإمساك والإفطار في رمضان 1447",
 };
 
 export default function PrayerTimesLayout({ children }: { children: React.ReactNode }) {

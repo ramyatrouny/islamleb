@@ -349,7 +349,7 @@ export default function NotFound() {
                   ﴿ وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ ﴾
                 </p>
                 <p className="relative text-[11px] text-muted-foreground/50 mt-1">
-                  سورة الطلاق - ٣
+                  سورة الطلاق - 3
                 </p>
               </motion.div>
             </div>

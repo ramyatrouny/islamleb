@@ -7,7 +7,6 @@ import {
   Calculator,
   HandHeart,
   MessageCircle,
-  Users,
   ShieldCheck,
 } from "lucide-react";
 import type { NavItem } from "@/lib/types";
@@ -22,7 +21,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/tracker", label: "المتتبع", icon: CalendarDays },
   { href: "/zakat", label: "حاسبة الزكاة", icon: Calculator },
   { href: "/calendar", label: "التقويم", icon: HandHeart },
-  { href: "/community", label: "المجتمع", icon: Users },
   { href: "/contact", label: "تواصل معنا", icon: MessageCircle },
 ];
 

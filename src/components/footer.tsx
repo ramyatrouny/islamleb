@@ -36,7 +36,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <p className="text-xs text-muted-foreground/60">
-            إسلام لبنان © ٢٠٢٦ - صدقة جارية
+            إسلام لبنان © 2026 - صدقة جارية
           </p>
         </div>
       </div>

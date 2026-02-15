@@ -345,7 +345,7 @@ export default function ZakatPage() {
                             min={0}
                             dir="ltr"
                             value={assets[field.key] || ""}
-                            placeholder="٠"
+                            placeholder="0"
                             onChange={(e) =>
                               handleAssetChange(field.key, e.target.value)
                             }
@@ -558,7 +558,7 @@ export default function ZakatPage() {
                         min={0}
                         dir="ltr"
                         value={fidyaDays || ""}
-                        placeholder="٠"
+                        placeholder="0"
                         onChange={(e) =>
                           setFidyaDays(Math.min(365, Math.max(0, parseInt(e.target.value) || 0)))
                         }

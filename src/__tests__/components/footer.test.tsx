@@ -15,6 +15,6 @@ describe("Footer", () => {
 
   it("renders copyright", () => {
     render(<Footer />);
-    expect(screen.getByText("إسلام لبنان © ٢٠٢٦ - صدقة جارية")).toBeInTheDocument();
+    expect(screen.getByText("إسلام لبنان © 2026 - صدقة جارية")).toBeInTheDocument();
   });
 });

@@ -184,7 +184,7 @@ export default function QuranPage() {
         <motion.div variants={fadeUpItem}>
           <PageHeader
             title="القرآن الكريم"
-            subtitle="ختمة رمضان ٢٠٢٦"
+            subtitle="ختمة رمضان 2026"
             icon={BookOpen}
           />
         </motion.div>
@@ -224,7 +224,7 @@ export default function QuranPage() {
                   </span>{" "}
                   من{" "}
                   <span className="font-semibold text-foreground">
-                    ٣٠
+                    30
                   </span>{" "}
                   جزءاً
                 </p>
@@ -408,7 +408,7 @@ export default function QuranPage() {
 
                 <div className="rounded-lg border border-[#d4a574]/15 p-3 text-center">
                   <p className="text-sm font-semibold text-foreground">
-                    ٤ صفحات بعد كل صلاة = جزء كامل
+                    4 صفحات بعد كل صلاة = جزء كامل
                   </p>
                 </div>
 
@@ -481,7 +481,7 @@ export default function QuranPage() {
                       الأجزاء المكتملة
                     </span>
                     <span className="text-lg font-bold text-emerald-500">
-                      {toArabicNumerals(completedCount)} / ٣٠
+                      {toArabicNumerals(completedCount)} / 30
                     </span>
                   </div>
 

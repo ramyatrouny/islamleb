@@ -19,7 +19,7 @@ const ashraData = [
     id: 1,
     title: "العشر الأولى",
     subtitle: "الرحمة",
-    days: "١ - ١٠",
+    days: "1 - 10",
     dua: "اللّهمّ ارحمني يا أرحم الراحمين",
     icon: Moon,
     color: "from-sky-500/20 to-sky-900/20",
@@ -31,7 +31,7 @@ const ashraData = [
     id: 2,
     title: "العشر الثانية",
     subtitle: "المغفرة",
-    days: "١١ - ٢٠",
+    days: "11 - 20",
     dua: "اللّهمّ اغفر لي ذنوبي يا ربّ العالمين",
     icon: Sparkles,
     color: "from-[#2d6a4f]/30 to-emerald-900/20",
@@ -43,7 +43,7 @@ const ashraData = [
     id: 3,
     title: "العشر الأخيرة",
     subtitle: "العتق من النار",
-    days: "٢١ - ٣٠",
+    days: "21 - 30",
     dua: "اللّهمّ أجرني من النار وأدخلني الجنة يا عزيز يا غفّار",
     icon: Star,
     color: "from-[#d4a574]/20 to-amber-900/20",
@@ -82,7 +82,7 @@ export default function CalendarPage() {
         {/* Page Title */}
         <PageHeader
           title="التقويم الرمضاني"
-          subtitle="٣٠ يوماً من العبادة والتقرب إلى الله"
+          subtitle="30 يوماً من العبادة والتقرب إلى الله"
           icon={Calendar}
         />
 
