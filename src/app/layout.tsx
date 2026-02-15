@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Amiri, Noto_Naskh_Arabic } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 import "./globals.css";
 import Header from "@/components/header";
@@ -51,6 +52,7 @@ export default function RootLayout({
         <Footer />
         <BottomNav />
       </body>
+      <GoogleAnalytics gaId="G-GNLB11NC30" />
     </html>
   );
 }
