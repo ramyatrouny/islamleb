@@ -183,9 +183,14 @@ export default function HomePage() {
 
   // Update countdown every second, using fetched Maghrib time when available
   useEffect(() => {
-    setCountdownState(computeCountdownState(maghribTime));
-    const interval = setInterval(() => setCountdownState(computeCountdownState(maghribTime)), 1000);
-    return () => clearInterval(interval);
+    const update = () => setCountdownState(computeCountdownState(maghribTime));
+    const interval = setInterval(update, 1000);
+    // Schedule the first tick asynchronously to avoid synchronous setState in effect body
+    const raf = requestAnimationFrame(update);
+    return () => {
+      clearInterval(interval);
+      cancelAnimationFrame(raf);
+    };
   }, [maghribTime]);
 
   const countdownUnits = [
