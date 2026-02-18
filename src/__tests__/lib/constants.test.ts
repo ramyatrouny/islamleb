@@ -49,7 +49,7 @@ describe("ARABIC_MONTHS", () => {
 });
 
 describe("STORAGE_KEYS", () => {
-  it("STORE key is islamleb-ramadan-2026", () => {
-    expect(STORAGE_KEYS.STORE).toBe("islamleb-ramadan-2026");
+  it("STORE key is islamleb-store", () => {
+    expect(STORAGE_KEYS.STORE).toBe("islamleb-store");
   });
 });

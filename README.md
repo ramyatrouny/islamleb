@@ -1,10 +1,10 @@
 <div align="center">
 
-# Ramadan 2026 - Islam Leb
+# IslamLeb — islamleb.com
 
 ### A comprehensive Ramadan companion web application for the Muslim community
 
-**Ramadan 1447H | February 18 - March 19, 2026**
+**islamleb.com | Ramadan 1447H**
 
 Built with Next.js 16 | React 19 | TypeScript | Tailwind CSS v4
 
@@ -16,7 +16,7 @@ Built with Next.js 16 | React 19 | TypeScript | Tailwind CSS v4
 
 ## Overview
 
-Islam Leb is a fully Arabic, RTL-first Ramadan companion application designed for the Muslim community with a focus on Lebanese cities. It provides prayer times, Quran tracking, adhkar, fasting management, a Ramadan calendar, and a zakat calculator -- all wrapped in a polished dark-mode UI with Islamic-inspired design elements.
+IslamLeb (islamleb.com) is a fully Arabic, RTL-first Ramadan companion application designed for the Muslim community with a focus on Lebanese cities. It provides prayer times, Quran tracking, adhkar, fasting management, a Ramadan calendar, and a zakat calculator -- all wrapped in a polished dark-mode UI with Islamic-inspired design elements.
 
 All user data is persisted locally in the browser via `localStorage`. No accounts, no tracking, no cookies.
 
@@ -162,7 +162,7 @@ tasbihCount: number             -- Lifetime tasbih counter
 selectedCity: string            -- Preferred city for prayer times
 ```
 
-All state is automatically persisted to `localStorage` under the key `islamleb-ramadan-2026` and survives page refreshes.
+All state is automatically persisted to `localStorage` under the key `islamleb-store` and survives page refreshes.
 
 ### RTL & Arabic-First Design
 

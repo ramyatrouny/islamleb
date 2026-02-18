@@ -81,5 +81,5 @@ export const ARABIC_MONTHS = [
 
 /** Centralized localStorage key registry */
 export const STORAGE_KEYS = {
-  STORE: "islamleb-ramadan-2026",
+  STORE: "islamleb-store",
 } as const;
