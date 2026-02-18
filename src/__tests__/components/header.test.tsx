@@ -3,6 +3,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Header from "@/components/header";
 
+// Mock UserMenu to avoid Firebase initialization in header tests
+vi.mock("@/components/user-menu", () => ({
+  UserMenu: () => <div data-testid="user-menu" />,
+}));
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/"),

@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Moon, Menu, X } from "lucide-react";
 import { NAV_ITEMS } from "@/config/navigation";
 import { isNavActive } from "@/lib/navigation-utils";
+import { UserMenu } from "@/components/user-menu";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,41 +27,49 @@ export default function Header() {
                 إسلام لبنان
               </span>
               <span className="text-[10px] leading-tight text-muted-foreground">
-                رمضان 2026 | 1447 هـ
+                islamleb.com
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {NAV_ITEMS.map((link) => {
-              const Icon = link.icon;
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Desktop Navigation + User Menu */}
+          <div className="hidden md:flex items-center gap-2">
+            <nav className="flex items-center gap-1">
+              {NAV_ITEMS.map((link) => {
+                const Icon = link.icon;
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="ms-2 border-s border-border/50 ps-3">
+              <UserMenu />
+            </div>
+          </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-            aria-label="فتح القائمة"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
+          {/* Mobile: User Menu + Menu Button */}
+          <div className="flex items-center gap-2 md:hidden">
+            <UserMenu />
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              aria-label="فتح القائمة"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -129,7 +138,7 @@ export default function Header() {
               {/* Drawer Footer */}
               <div className="absolute bottom-0 start-0 end-0 border-t border-border px-4 py-4">
                 <p className="text-center text-xs text-muted-foreground">
-                  رمضان 2026 | 1447 هـ
+                  islamleb.com
                 </p>
                 <p className="mt-1 text-center text-xs text-muted-foreground">
                   تقبل الله منا ومنكم

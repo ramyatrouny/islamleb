@@ -7,6 +7,9 @@ import Header from "@/components/header";
 import BottomNav from "@/components/bottom-nav";
 import Footer from "@/components/footer";
 import { RamadanDatesFetcher } from "@/components/ramadan-dates-fetcher";
+import { AuthProvider } from "@/providers/auth-provider";
+import { FirestoreSyncInitializer } from "@/components/firestore-sync-initializer";
+import { AuthModal } from "@/components/auth-modal";
 
 const notoNaskhArabic = Noto_Naskh_Arabic({
   variable: "--font-noto-naskh-arabic",
@@ -46,11 +49,15 @@ export default function RootLayout({
       <body
         className={`${notoNaskhArabic.variable} ${amiri.variable} font-(family-name:--font-noto-naskh-arabic) antialiased overflow-x-clip`}
       >
-        <RamadanDatesFetcher />
-        <Header />
-        <main className="min-h-screen pb-20 md:pb-0 overflow-x-clip">{children}</main>
-        <Footer />
-        <BottomNav />
+        <AuthProvider>
+          <FirestoreSyncInitializer />
+          <RamadanDatesFetcher />
+          <AuthModal />
+          <Header />
+          <main className="min-h-screen pb-20 md:pb-0 overflow-x-clip">{children}</main>
+          <Footer />
+          <BottomNav />
+        </AuthProvider>
       </body>
       <GoogleAnalytics gaId="G-GNLB11NC30" />
     </html>

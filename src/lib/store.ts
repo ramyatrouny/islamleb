@@ -29,6 +29,18 @@ interface RamadanStore {
   // Selected city for prayer times
   selectedCity: string;
   setSelectedCity: (city: string) => void;
+
+  // Cloud sync timestamp (0 = never synced)
+  lastSyncedAt: number;
+
+  // Bulk setter for merging cloud data (single atomic update)
+  setSyncData: (data: {
+    fastingDays: boolean[];
+    completedJuz: number[];
+    dailyGoals: Record<number, boolean[]>;
+    tasbihCount: number;
+    selectedCity: string;
+  }) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -81,6 +93,18 @@ export const useRamadanStore = create<RamadanStore>()(
       // ── City ─────────────────────────────────────────────────────────
       selectedCity: "Beirut",
       setSelectedCity: (city) => set({ selectedCity: city }),
+
+      // ── Cloud sync ─────────────────────────────────────────────────
+      lastSyncedAt: 0,
+      setSyncData: (data) =>
+        set({
+          fastingDays: data.fastingDays,
+          completedJuz: data.completedJuz,
+          dailyGoals: data.dailyGoals,
+          tasbihCount: data.tasbihCount,
+          selectedCity: data.selectedCity,
+          lastSyncedAt: Date.now(),
+        }),
     }),
     { name: STORAGE_KEYS.STORE, version: 1 },
   ),
