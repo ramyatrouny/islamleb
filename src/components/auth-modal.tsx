@@ -32,6 +32,51 @@ function PasswordToggle({
   );
 }
 
+// ─── Google Button ───────────────────────────────────────────────────────────
+
+function GoogleButton({
+  label,
+  loading,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  loading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex w-full items-center justify-center gap-2.5 h-11 rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-foreground transition-all duration-200 hover:bg-white/10 hover:border-white/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <GoogleIcon className="h-4 w-4" />
+      )}
+      {label}
+    </button>
+  );
+}
+
+// ─── Divider ─────────────────────────────────────────────────────────────────
+
+function Divider() {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center">
+        <div className="w-full border-t border-border/60" />
+      </div>
+      <div className="relative flex justify-center text-xs">
+        <span className="bg-card px-3 text-muted-foreground">أو</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Login Form ──────────────────────────────────────────────────────────────
 
 function LoginForm({ onSuccess }: { onSuccess: () => void }) {
@@ -74,32 +119,15 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="space-y-5">
-      {/* Google Sign-In */}
-      <button
-        type="button"
-        className="flex w-full items-center justify-center gap-2.5 h-11 rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-foreground transition-all duration-200 hover:bg-white/10 hover:border-white/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        onClick={handleGoogle}
+      <GoogleButton
+        label="تسجيل الدخول بحساب Google"
+        loading={googleLoading}
         disabled={googleLoading || loading}
-      >
-        {googleLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <GoogleIcon className="h-4 w-4" />
-        )}
-        تسجيل الدخول بحساب Google
-      </button>
+        onClick={handleGoogle}
+      />
 
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border/60" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-card px-3 text-muted-foreground">أو</span>
-        </div>
-      </div>
+      <Divider />
 
-      {/* Email/Password Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="login-email">البريد الإلكتروني</Label>
@@ -170,7 +198,6 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         </Button>
       </form>
 
-      {/* Switch to signup */}
       <p className="text-center text-sm text-muted-foreground">
         ليس لديك حساب؟{" "}
         <button
@@ -240,32 +267,15 @@ function SignupForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="space-y-5">
-      {/* Google Sign-Up */}
-      <button
-        type="button"
-        className="flex w-full items-center justify-center gap-2.5 h-11 rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-foreground transition-all duration-200 hover:bg-white/10 hover:border-white/20 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        onClick={handleGoogle}
+      <GoogleButton
+        label="التسجيل بحساب Google"
+        loading={googleLoading}
         disabled={googleLoading || loading}
-      >
-        {googleLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <GoogleIcon className="h-4 w-4" />
-        )}
-        التسجيل بحساب Google
-      </button>
+        onClick={handleGoogle}
+      />
 
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border/60" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-card px-3 text-muted-foreground">أو</span>
-        </div>
-      </div>
+      <Divider />
 
-      {/* Signup Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="signup-name">الاسم</Label>
@@ -374,7 +384,6 @@ function SignupForm({ onSuccess }: { onSuccess: () => void }) {
         </Button>
       </form>
 
-      {/* Switch to login */}
       <p className="text-center text-sm text-muted-foreground">
         لديك حساب بالفعل؟{" "}
         <button
@@ -394,7 +403,6 @@ function SignupForm({ onSuccess }: { onSuccess: () => void }) {
 export function AuthModal() {
   const { isOpen, tab, close } = useAuthModal();
 
-  // Close on Escape
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
@@ -420,7 +428,7 @@ export function AuthModal() {
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-100 flex items-center justify-center p-4"
+          className="fixed inset-0 z-100 flex items-end sm:items-center justify-center sm:p-4"
           role="dialog"
           aria-modal="true"
           aria-label={tab === "login" ? "تسجيل الدخول" : "إنشاء حساب"}
@@ -435,14 +443,19 @@ export function AuthModal() {
             onClick={close}
           />
 
-          {/* Modal */}
+          {/* Modal — bottom sheet on mobile, centered card on desktop */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-border/60 bg-card shadow-2xl"
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="relative w-full sm:max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-border/60 bg-card shadow-2xl"
           >
+            {/* Drag handle — mobile only */}
+            <div className="flex justify-center pt-3 pb-1 sm:hidden">
+              <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+            </div>
+
             {/* Close button */}
             <button
               onClick={close}
@@ -452,12 +465,12 @@ export function AuthModal() {
               <X className="h-4 w-4" />
             </button>
 
-            {/* Header with icon */}
-            <div className="pt-8 pb-2 px-6 sm:px-8 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/5">
-                <Moon className="h-7 w-7 text-primary" />
+            {/* Header */}
+            <div className="pt-4 sm:pt-8 pb-2 px-5 sm:px-8 text-center">
+              <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/5">
+                <Moon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-foreground">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground">
                 {tab === "login" ? "مرحباً بعودتك" : "أهلاً بك"}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -468,7 +481,7 @@ export function AuthModal() {
             </div>
 
             {/* Tab selector */}
-            <div className="flex mx-6 sm:mx-8 mt-4 rounded-xl bg-muted/50 p-1">
+            <div className="flex mx-5 sm:mx-8 mt-3 sm:mt-4 rounded-xl bg-muted/50 p-1">
               <button
                 onClick={() => useAuthModal.getState().setTab("login")}
                 className={`flex-1 rounded-lg py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
@@ -492,7 +505,7 @@ export function AuthModal() {
             </div>
 
             {/* Form content */}
-            <div className="p-6 sm:p-8 pt-5 sm:pt-5">
+            <div className="p-5 sm:p-8 pt-4 sm:pt-5 pb-8 sm:pb-8">
               {tab === "login" ? (
                 <LoginForm onSuccess={handleSuccess} />
               ) : (

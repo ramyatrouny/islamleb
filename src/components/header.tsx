@@ -4,14 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Moon, Menu, X } from "lucide-react";
+import { Moon, Menu, X, User, LogOut } from "lucide-react";
 import { NAV_ITEMS } from "@/config/navigation";
 import { isNavActive } from "@/lib/navigation-utils";
 import { UserMenu } from "@/components/user-menu";
+import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/hooks/use-auth-modal";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user, loading, signOut } = useAuth();
+  const openModal = useAuthModal((s) => s.open);
 
   const isActive = (href: string) => isNavActive(href, pathname);
 
@@ -93,7 +97,7 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-y-0 end-0 z-50 w-72 bg-background border-s border-border shadow-2xl"
+              className="fixed inset-y-0 end-0 z-50 w-72 bg-background border-s border-border shadow-2xl flex flex-col"
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-border px-4 py-4">
@@ -112,8 +116,55 @@ export default function Header() {
                 </button>
               </div>
 
+              {/* User Section */}
+              <div className="border-b border-border px-4 py-4">
+                {loading ? (
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3.5 w-24 rounded bg-muted animate-pulse" />
+                      <div className="h-3 w-32 rounded bg-muted animate-pulse" />
+                    </div>
+                  </div>
+                ) : user ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        (user.displayName ?? user.email ?? "؟")[0].toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {user.displayName ?? "مستخدم"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      openModal("login");
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg bg-primary/10 px-4 py-3 text-sm font-medium text-primary transition-colors active:bg-primary/15"
+                  >
+                    <User className="h-5 w-5" />
+                    تسجيل الدخول / إنشاء حساب
+                  </button>
+                )}
+              </div>
+
               {/* Drawer Nav Links */}
-              <nav className="flex flex-col gap-1 p-4">
+              <nav className="flex flex-col gap-1 p-4 flex-1 overflow-y-auto">
                 {NAV_ITEMS.map((link) => {
                   const Icon = link.icon;
                   const active = isActive(link.href);
@@ -136,7 +187,19 @@ export default function Header() {
               </nav>
 
               {/* Drawer Footer */}
-              <div className="absolute bottom-0 start-0 end-0 border-t border-border px-4 py-4">
+              <div className="border-t border-border px-4 py-4">
+                {user && (
+                  <button
+                    onClick={async () => {
+                      setMobileMenuOpen(false);
+                      await signOut();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 mb-3 text-sm font-medium text-red-400 transition-colors hover:bg-red-400/10 active:bg-red-400/15"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    تسجيل الخروج
+                  </button>
+                )}
                 <p className="text-center text-xs text-muted-foreground">
                   islamleb.com
                 </p>

@@ -8,6 +8,17 @@ vi.mock("@/components/user-menu", () => ({
   UserMenu: () => <div data-testid="user-menu" />,
 }));
 
+// Mock useAuth to avoid AuthProvider requirement
+vi.mock("@/hooks/use-auth", () => ({
+  useAuth: () => ({ user: null, loading: false, signOut: vi.fn() }),
+}));
+
+// Mock useAuthModal store
+vi.mock("@/hooks/use-auth-modal", () => ({
+  useAuthModal: (selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ open: vi.fn(), close: vi.fn(), isOpen: false, tab: "login", setTab: vi.fn() }),
+}));
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/"),

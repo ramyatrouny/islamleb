@@ -72,13 +72,13 @@ export function UserMenu() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute start-0 top-full z-50 mt-2 w-56 origin-top-right rounded-xl border border-border/60 bg-card shadow-xl"
+            className="absolute end-0 sm:start-0 sm:end-auto top-full z-50 mt-2 w-56 origin-top rounded-xl border border-border/60 bg-card shadow-xl"
           >
             <div className="border-b border-border/30 px-4 py-3">
               <p className="text-sm font-medium text-foreground truncate">
                 {user.displayName ?? "مستخدم"}
               </p>
-              <p className="text-xs text-muted-foreground truncate" dir="ltr">
+              <p className="text-xs text-muted-foreground truncate">
                 {user.email}
               </p>
             </div>
