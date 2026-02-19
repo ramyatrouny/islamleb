@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "إسلام لبنان - رفيقك الرقمي في شهر رمضان المبارك";
+export const alt = "إسلام لبنان - رفيقك الإسلامي الرقمي الشامل";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -78,12 +78,12 @@ export default function OGImage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: "24px",
+            marginBottom: "20px",
           }}
         >
           <svg
-            width="90"
-            height="90"
+            width="80"
+            height="80"
             viewBox="0 0 100 100"
             fill="none"
           >
@@ -109,33 +109,31 @@ export default function OGImage() {
           </svg>
         </div>
 
-        {/* Site name in Arabic */}
+        {/* Headline - clear and bold */}
         <div
           style={{
-            fontSize: "72px",
+            fontSize: "68px",
             fontWeight: 700,
             color: "#f5f0eb",
             lineHeight: 1.2,
             textAlign: "center",
-            marginBottom: "8px",
-            letterSpacing: "2px",
+            marginBottom: "6px",
           }}
         >
           إسلام لبنان
         </div>
 
-        {/* Domain */}
+        {/* Subtitle tagline */}
         <div
           style={{
-            fontSize: "28px",
+            fontSize: "32px",
             fontWeight: 400,
             color: "#d4a574",
             textAlign: "center",
-            marginBottom: "28px",
-            letterSpacing: "4px",
+            marginBottom: "24px",
           }}
         >
-          islamleb.com
+          رفيقك الإسلامي الرقمي الشامل
         </div>
 
         {/* Decorative line separator */}
@@ -144,7 +142,7 @@ export default function OGImage() {
             display: "flex",
             alignItems: "center",
             gap: "16px",
-            marginBottom: "28px",
+            marginBottom: "24px",
           }}
         >
           <div
@@ -171,31 +169,17 @@ export default function OGImage() {
           />
         </div>
 
-        {/* Tagline */}
-        <div
-          style={{
-            fontSize: "30px",
-            fontWeight: 400,
-            color: "#a8a0b4",
-            textAlign: "center",
-            maxWidth: "800px",
-            lineHeight: 1.6,
-          }}
-        >
-          رفيقك الرقمي في شهر رمضان المبارك
-        </div>
-
         {/* Feature pills */}
         <div
           style={{
             display: "flex",
-            gap: "16px",
-            marginTop: "32px",
+            gap: "14px",
             flexWrap: "wrap",
             justifyContent: "center",
+            marginBottom: "28px",
           }}
         >
-          {["مواقيت الصلاة", "القرآن الكريم", "الأذكار", "حاسبة الزكاة"].map(
+          {["مواقيت الصلاة", "القرآن الكريم", "الأذكار", "حاسبة الزكاة", "رمضان والمزيد"].map(
             (label) => (
               <div
                 key={label}
@@ -204,7 +188,7 @@ export default function OGImage() {
                   borderRadius: "20px",
                   border: "1px solid rgba(212,165,116,0.3)",
                   color: "#d4a574",
-                  fontSize: "18px",
+                  fontSize: "17px",
                   background: "rgba(212,165,116,0.08)",
                 }}
               >
@@ -212,6 +196,23 @@ export default function OGImage() {
               </div>
             )
           )}
+        </div>
+
+        {/* Call to action */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            padding: "12px 36px",
+            borderRadius: "30px",
+            background: "linear-gradient(135deg, #d4a574, #c9963e)",
+            color: "#0a0a0f",
+            fontSize: "22px",
+            fontWeight: 700,
+          }}
+        >
+          islamleb.com ← تصفّح الآن
         </div>
       </div>
     ),
