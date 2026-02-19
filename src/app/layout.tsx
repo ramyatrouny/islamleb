@@ -39,10 +39,11 @@ export const metadata: Metadata = {
     siteName: "إسلام لبنان",
     images: [
       {
-        url: "/opengraph-image",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "إسلام لبنان - رفيقك الإسلامي الرقمي الشامل",
+        type: "image/png",
       },
     ],
   },
@@ -51,7 +52,7 @@ export const metadata: Metadata = {
     title: "إسلام لبنان - رفيقك الإسلامي الرقمي الشامل | islamleb.com",
     description:
       "مواقيت الصلاة، القرآن الكريم، الأذكار اليومية، متتبع الصيام، حاسبة الزكاة، والمزيد. منصتك الإسلامية الشاملة في لبنان لكل ما يحتاجه المسلم",
-    images: ["/twitter-image"],
+    images: ["/og-image.png"],
   },
   other: {
     "theme-color": "#0a0a0f",
