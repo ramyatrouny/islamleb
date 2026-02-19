@@ -2,6 +2,8 @@ import {
   doc,
   getDoc,
   setDoc,
+  addDoc,
+  collection,
   onSnapshot,
   serverTimestamp,
   type Unsubscribe,
@@ -63,6 +65,35 @@ export async function createUserDocument(
     { merge: true },
   );
 }
+
+// ---------------------------------------------------------------------------
+// Contact Messages
+// ---------------------------------------------------------------------------
+
+export interface ContactMessage {
+  category: string;
+  name: string;
+  email: string;
+  subject?: string;
+  page?: string;
+  message: string;
+  uid?: string;
+  createdAt: ReturnType<typeof serverTimestamp>;
+}
+
+/** Submit a contact form message to the messages collection. */
+export async function submitContactMessage(
+  data: Omit<ContactMessage, "createdAt">,
+): Promise<void> {
+  await addDoc(collection(getFirebaseDb(), "messages"), {
+    ...data,
+    createdAt: serverTimestamp(),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Real-time Sync
+// ---------------------------------------------------------------------------
 
 /** Subscribe to real-time changes on the user's progress (cross-device sync). */
 export function subscribeToUserProgress(
