@@ -15,6 +15,7 @@ export interface UserDocument {
   email: string;
   displayName: string | null;
   photoURL: string | null;
+  role?: "admin" | "user";
   createdAt: FieldValue | Timestamp;
   progress: UserProgress;
   lastSyncedAt: FieldValue | Timestamp;

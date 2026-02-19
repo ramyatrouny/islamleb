@@ -1,9 +1,12 @@
 import {
   doc,
   getDoc,
+  getDocs,
   setDoc,
   addDoc,
   collection,
+  query,
+  orderBy,
   onSnapshot,
   serverTimestamp,
   type Unsubscribe,
@@ -111,4 +114,73 @@ export function subscribeToUserProgress(
       console.error("[Firestore] onSnapshot error:", error);
     },
   );
+}
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+/** Fetch the role field from a user document. Returns undefined if no doc/role. */
+export async function getUserRole(
+  uid: string,
+): Promise<UserDocument["role"] | undefined> {
+  const snap = await getDoc(doc(getFirebaseDb(), "users", uid));
+  if (!snap.exists()) return undefined;
+  return (snap.data() as UserDocument).role;
+}
+
+/** Fetch all user documents ordered by creation date (newest first). */
+export async function getAllUsers(): Promise<UserDocument[]> {
+  const q = query(
+    collection(getFirebaseDb(), "users"),
+    orderBy("createdAt", "desc"),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data() as UserDocument);
+}
+
+/** Fetch all contact messages ordered by creation date (newest first). */
+export async function getAllMessages(): Promise<
+  (ContactMessage & { id: string })[]
+> {
+  const q = query(
+    collection(getFirebaseDb(), "messages"),
+    orderBy("createdAt", "desc"),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({
+    id: d.id,
+    ...(d.data() as ContactMessage),
+  }));
+}
+
+/** Compute aggregate admin stats from users and messages collections. */
+export async function getAdminStats() {
+  const [users, messages] = await Promise.all([
+    getAllUsers(),
+    getAllMessages(),
+  ]);
+
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+  const recentSignups = users.filter((u) => {
+    if (!u.createdAt || typeof (u.createdAt as { toMillis?: unknown }).toMillis !== "function") return false;
+    return (u.createdAt as { toMillis(): number }).toMillis() > sevenDaysAgo;
+  }).length;
+
+  const messagesByCategory = messages.reduce<Record<string, number>>(
+    (acc, m) => {
+      acc[m.category] = (acc[m.category] ?? 0) + 1;
+      return acc;
+    },
+    {},
+  );
+
+  return {
+    totalUsers: users.length,
+    totalMessages: messages.length,
+    recentSignups,
+    messagesByCategory,
+  };
 }

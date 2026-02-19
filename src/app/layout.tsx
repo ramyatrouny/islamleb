@@ -3,13 +3,11 @@ import { Amiri, Noto_Naskh_Arabic } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 import "./globals.css";
-import Header from "@/components/header";
-import BottomNav from "@/components/bottom-nav";
-import Footer from "@/components/footer";
 import { RamadanDatesFetcher } from "@/components/ramadan-dates-fetcher";
 import { AuthProvider } from "@/providers/auth-provider";
 import { FirestoreSyncInitializer } from "@/components/firestore-sync-initializer";
 import { AuthModal } from "@/components/auth-modal";
+import { MainLayoutShell } from "@/components/main-layout-shell";
 
 const notoNaskhArabic = Noto_Naskh_Arabic({
   variable: "--font-noto-naskh-arabic",
@@ -53,10 +51,9 @@ export default function RootLayout({
           <FirestoreSyncInitializer />
           <RamadanDatesFetcher />
           <AuthModal />
-          <Header />
-          <main className="min-h-screen pb-20 md:pb-0 overflow-x-clip">{children}</main>
-          <Footer />
-          <BottomNav />
+          <MainLayoutShell>
+            <main className="min-h-screen pb-20 md:pb-0 overflow-x-clip">{children}</main>
+          </MainLayoutShell>
         </AuthProvider>
       </body>
       <GoogleAnalytics gaId="G-GNLB11NC30" />
