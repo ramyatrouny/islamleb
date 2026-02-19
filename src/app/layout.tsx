@@ -24,16 +24,28 @@ const amiri = Amiri({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://islamleb.com"),
   title: "إسلام لبنان | islamleb.com",
   description:
     "رفيقك الرقمي في شهر رمضان المبارك - مواقيت الصلاة، القرآن الكريم، الأذكار، متتبع الصيام، حاسبة الزكاة والمزيد",
   keywords: "رمضان, مواقيت الصلاة, قرآن, أذكار, زكاة, لبنان, إسلام, islamleb",
   openGraph: {
     title: "إسلام لبنان | islamleb.com",
-    description: "رفيقك الرقمي في شهر رمضان المبارك",
+    description:
+      "رفيقك الرقمي في شهر رمضان المبارك - مواقيت الصلاة، القرآن الكريم، الأذكار، متتبع الصيام، حاسبة الزكاة والمزيد",
     locale: "ar_LB",
     type: "website",
     url: "https://islamleb.com",
+    siteName: "إسلام لبنان",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "إسلام لبنان | islamleb.com",
+    description:
+      "رفيقك الرقمي في شهر رمضان المبارك - مواقيت الصلاة، القرآن الكريم، الأذكار، متتبع الصيام، حاسبة الزكاة والمزيد",
+  },
+  other: {
+    "theme-color": "#0a0a0f",
   },
 };
 
