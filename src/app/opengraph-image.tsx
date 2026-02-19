@@ -17,155 +17,117 @@ export default function OGImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0a0a0f 0%, #0f1524 40%, #141425 100%)",
+          backgroundColor: "#0a0a0f",
           position: "relative",
-          overflow: "hidden",
         }}
       >
-        {/* Decorative radial glow - top right */}
-        <div
-          style={{
-            position: "absolute",
-            top: "-120px",
-            right: "-80px",
-            width: "500px",
-            height: "500px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(212,165,116,0.15) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* Decorative radial glow - bottom left */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-100px",
-            left: "-60px",
-            width: "400px",
-            height: "400px",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(45,106,79,0.2) 0%, transparent 70%)",
-          }}
-        />
-
-        {/* Top decorative border */}
+        {/* Top gold border */}
         <div
           style={{
             position: "absolute",
             top: 0,
             left: 0,
             right: 0,
-            height: "4px",
-            background: "linear-gradient(90deg, transparent, #d4a574, #c9963e, #d4a574, transparent)",
+            height: "5px",
+            backgroundColor: "#d4a574",
           }}
         />
 
-        {/* Bottom decorative border */}
+        {/* Bottom gold border */}
         <div
           style={{
             position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
-            height: "4px",
-            background: "linear-gradient(90deg, transparent, #d4a574, #c9963e, #d4a574, transparent)",
+            height: "5px",
+            backgroundColor: "#d4a574",
           }}
         />
 
-        {/* Crescent moon */}
+        {/* Decorative glow - top right */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: "20px",
+            position: "absolute",
+            top: "-100px",
+            right: "-50px",
+            width: "400px",
+            height: "400px",
+            borderRadius: "200px",
+            backgroundColor: "rgba(212,165,116,0.08)",
+          }}
+        />
+
+        {/* Decorative glow - bottom left */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-80px",
+            left: "-40px",
+            width: "350px",
+            height: "350px",
+            borderRadius: "175px",
+            backgroundColor: "rgba(45,106,79,0.1)",
+          }}
+        />
+
+        {/* Crescent & star as text */}
+        <div
+          style={{
+            fontSize: "72px",
+            marginBottom: "16px",
           }}
         >
-          <svg
-            width="80"
-            height="80"
-            viewBox="0 0 100 100"
-            fill="none"
-          >
-            <path
-              d="M 65 10 A 45 45 0 1 0 65 90 A 35 35 0 0 1 65 10 Z"
-              fill="url(#moonGrad)"
-            />
-            <polygon
-              points="78,28 82,38 92,38 84,44 87,54 78,47 69,54 72,44 64,38 74,38"
-              fill="url(#starGrad)"
-            />
-            <defs>
-              <linearGradient id="moonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#e8c491" />
-                <stop offset="50%" stopColor="#d4a574" />
-                <stop offset="100%" stopColor="#b8864e" />
-              </linearGradient>
-              <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#e8c491" />
-                <stop offset="100%" stopColor="#c9963e" />
-              </linearGradient>
-            </defs>
-          </svg>
+          ☪
         </div>
 
-        {/* Headline - clear and bold */}
+        {/* Site name */}
         <div
           style={{
-            fontSize: "68px",
+            fontSize: "72px",
             fontWeight: 700,
             color: "#f5f0eb",
-            lineHeight: 1.2,
             textAlign: "center",
-            marginBottom: "6px",
+            marginBottom: "8px",
           }}
         >
           إسلام لبنان
         </div>
 
-        {/* Subtitle tagline */}
+        {/* Tagline */}
         <div
           style={{
             fontSize: "32px",
-            fontWeight: 400,
             color: "#d4a574",
             textAlign: "center",
-            marginBottom: "24px",
+            marginBottom: "32px",
           }}
         >
           رفيقك الإسلامي الرقمي الشامل
         </div>
 
-        {/* Decorative line separator */}
+        {/* Separator */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: "16px",
-            marginBottom: "24px",
+            marginBottom: "32px",
           }}
         >
           <div
-            style={{
-              width: "80px",
-              height: "1px",
-              background: "linear-gradient(90deg, transparent, #d4a574)",
-            }}
+            style={{ width: "80px", height: "2px", backgroundColor: "#d4a574" }}
           />
           <div
             style={{
               width: "8px",
               height: "8px",
-              borderRadius: "50%",
-              background: "#d4a574",
+              borderRadius: "4px",
+              backgroundColor: "#d4a574",
             }}
           />
           <div
-            style={{
-              width: "80px",
-              height: "1px",
-              background: "linear-gradient(90deg, #d4a574, transparent)",
-            }}
+            style={{ width: "80px", height: "2px", backgroundColor: "#d4a574" }}
           />
         </div>
 
@@ -176,7 +138,7 @@ export default function OGImage() {
             gap: "14px",
             flexWrap: "wrap",
             justifyContent: "center",
-            marginBottom: "28px",
+            marginBottom: "32px",
           }}
         >
           {["مواقيت الصلاة", "القرآن الكريم", "الأذكار", "حاسبة الزكاة", "رمضان والمزيد"].map(
@@ -184,12 +146,11 @@ export default function OGImage() {
               <div
                 key={label}
                 style={{
-                  padding: "8px 20px",
+                  padding: "10px 22px",
                   borderRadius: "20px",
-                  border: "1px solid rgba(212,165,116,0.3)",
+                  border: "1px solid rgba(212,165,116,0.4)",
                   color: "#d4a574",
-                  fontSize: "17px",
-                  background: "rgba(212,165,116,0.08)",
+                  fontSize: "18px",
                 }}
               >
                 {label}
@@ -198,26 +159,22 @@ export default function OGImage() {
           )}
         </div>
 
-        {/* Call to action */}
+        {/* CTA button */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            padding: "12px 36px",
+            padding: "14px 40px",
             borderRadius: "30px",
-            background: "linear-gradient(135deg, #d4a574, #c9963e)",
+            backgroundColor: "#d4a574",
             color: "#0a0a0f",
-            fontSize: "22px",
+            fontSize: "24px",
             fontWeight: 700,
           }}
         >
-          islamleb.com ← تصفّح الآن
+          islamleb.com
         </div>
       </div>
     ),
-    {
-      ...size,
-    }
+    { ...size }
   );
 }
