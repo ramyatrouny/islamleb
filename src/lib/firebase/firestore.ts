@@ -154,6 +154,13 @@ export async function getAllMessages(): Promise<
   }));
 }
 
+function toDateKey(ts: unknown): string | null {
+  if (!ts || typeof (ts as { toDate?: unknown }).toDate !== "function")
+    return null;
+  const d = (ts as { toDate(): Date }).toDate();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 /** Compute aggregate admin stats from users and messages collections. */
 export async function getAdminStats() {
   const [users, messages] = await Promise.all([
@@ -177,10 +184,36 @@ export async function getAdminStats() {
     {},
   );
 
+  // Daily signups for the last 30 days
+  const signupsByDay: Record<string, number> = {};
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now - i * 24 * 60 * 60 * 1000);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    signupsByDay[key] = 0;
+  }
+  for (const u of users) {
+    const key = toDateKey(u.createdAt);
+    if (key && key in signupsByDay) signupsByDay[key]++;
+  }
+
+  // Daily messages for the last 30 days
+  const messagesByDay: Record<string, number> = {};
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now - i * 24 * 60 * 60 * 1000);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    messagesByDay[key] = 0;
+  }
+  for (const m of messages) {
+    const key = toDateKey(m.createdAt);
+    if (key && key in messagesByDay) messagesByDay[key]++;
+  }
+
   return {
     totalUsers: users.length,
     totalMessages: messages.length,
     recentSignups,
     messagesByCategory,
+    signupsByDay,
+    messagesByDay,
   };
 }
