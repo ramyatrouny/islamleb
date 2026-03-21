@@ -29,7 +29,8 @@ describe("BottomNav", () => {
     expect(screen.getByText("الصلاة")).toBeInTheDocument();
     expect(screen.getByText("القرآن")).toBeInTheDocument();
     expect(screen.getByText("الأذكار")).toBeInTheDocument();
-    expect(screen.getByText("المتتبع")).toBeInTheDocument();
+    // Tracker label adapts based on Islamic phase (السنّة outside Ramadan, المتتبع during)
+    expect(screen.getByText(/المتتبع|السنّة/)).toBeInTheDocument();
   });
 
   it("links have correct hrefs", () => {

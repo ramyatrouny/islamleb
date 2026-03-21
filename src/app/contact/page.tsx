@@ -24,7 +24,10 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/page-header";
 import { sectionReveal, staggerContainer, scaleUpItem } from "@/lib/animations";
 import { useAuth } from "@/hooks/use-auth";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { submitContactMessage } from "@/lib/firebase/firestore";
+import { getVisibleNavItems } from "@/config/navigation";
+import { getIslamicPhase } from "@/lib/islamic-calendar";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -155,6 +158,15 @@ function Select({
 
 export default function ContactPage() {
   const { user } = useAuth();
+  const mounted = useHydrated();
+  const pageOptions = mounted
+    ? [
+        ...getVisibleNavItems(getIslamicPhase())
+          .filter((item) => item.href !== "/contact")
+          .map((item) => ({ value: item.href.replace("/", "") || "home", label: item.label })),
+        { value: "other", label: "أخرى" },
+      ]
+    : PAGE_OPTIONS;
 
   const [category, setCategory] = useState<Category | "">("");
   const [name, setName] = useState("");
@@ -392,7 +404,7 @@ export default function ContactPage() {
                             id="contact-page"
                             value={page}
                             onChange={setPage}
-                            options={PAGE_OPTIONS}
+                            options={pageOptions}
                             placeholder="اختر الصفحة..."
                             disabled={loading}
                           />

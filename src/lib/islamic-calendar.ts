@@ -57,5 +57,5 @@ export function getNextIslamicEvent(
 
 export function isRamadanSeason(now?: Date): boolean {
   const phase = getIslamicPhase(now);
-  return phase === "before-ramadan" || phase === "ramadan" || phase === "eid-al-fitr";
+  return phase === "before-ramadan" || phase === "ramadan";
 }

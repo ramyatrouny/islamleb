@@ -14,11 +14,15 @@ import {
   Calendar,
   Star,
   Quote,
+  Landmark,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchPrayerTimes } from "@/lib/api/aladhan";
 import { ramadanHadiths } from "@/lib/hadith-data";
 import { computeCountdownState } from "@/lib/countdown";
+import { getIslamicPhase, getNextIslamicEvent } from "@/lib/islamic-calendar";
+import { generalHadiths } from "@/lib/hadith-data";
+import type { IslamicPhase } from "@/lib/types";
 
 // --- Quick Access Items (page-specific UI config) ---
 const quickAccessItems = [
@@ -60,12 +64,20 @@ const quickAccessItems = [
   },
 ];
 
+const yearRoundQuickAccessItems = [
+  { title: "مواقيت الصلاة", description: "أوقات الصلاة اليومية لمدينتك", icon: Clock, href: "/prayer-times" },
+  { title: "القرآن الكريم", description: "تلاوة وتصفح المصحف الشريف", icon: BookOpen, href: "/quran" },
+  { title: "الأذكار والأدعية", description: "أذكار الصباح والمساء والأدعية اليومية", icon: Heart, href: "/adhkar" },
+  { title: "حاسبة الزكاة", description: "احسب زكاة مالك بسهولة", icon: Calculator, href: "/zakat" },
+  { title: "صيام السنّة", description: "تتبع صيام الإثنين والخميس وأيام البيض", icon: CalendarDays, href: "/tracker" },
+];
+
 // --- Helper: pick a daily hadith based on day-of-year ---
 function getDailyHadithIndex(): number {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 0);
   const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-  return dayOfYear % ramadanHadiths.length;
+  return dayOfYear;
 }
 
 // --- Floating star for hero background ---
@@ -163,9 +175,17 @@ export default function HomePage() {
   const [countdownState, setCountdownState] = useState(() => computeCountdownState());
   const mounted = useHydrated();
 
-  const { phase, timeLeft, ramadanDay } = countdownState;
+  const { phase, timeLeft, eventDay } = countdownState;
 
-  const dailyHadith = useMemo(() => ramadanHadiths[getDailyHadithIndex()], []);
+  const currentPhase = mounted ? getIslamicPhase() : ("normal" as IslamicPhase);
+  const isRamadanTime = currentPhase === "ramadan" || currentPhase === "before-ramadan";
+  const isEid = currentPhase === "eid-al-fitr" || currentPhase === "eid-al-adha";
+  const activeQuickAccess = isRamadanTime ? quickAccessItems : yearRoundQuickAccessItems;
+
+  const dailyHadith = useMemo(() => {
+    const source = isRamadanTime ? ramadanHadiths : generalHadiths;
+    return source[getDailyHadithIndex() % source.length];
+  }, [isRamadanTime]);
 
   // Fetch today's Maghrib time from Aladhan API
   useEffect(() => {
@@ -200,6 +220,69 @@ export default function HomePage() {
     { label: "ثانية", value: timeLeft.seconds },
   ];
 
+  const nextEvent = getNextIslamicEvent();
+
+  // Hero content based on phase
+  const heroIcon = isRamadanTime ? (
+    <motion.div
+      animate={{ rotate: [0, 8, -8, 4, 0] }}
+      transition={{
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      {/* Moon glow ring */}
+      <motion.div
+        animate={{ opacity: [0.15, 0.35, 0.15], scale: [1, 1.2, 1] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 rounded-full bg-[#d4a574]/15 blur-2xl scale-150"
+      />
+      <Moon
+        size={72}
+        style={{ color: "#d4a574" }}
+        strokeWidth={1.5}
+        fill="rgba(212,165,116,0.15)"
+        className="relative"
+      />
+    </motion.div>
+  ) : (
+    <motion.div
+      animate={{ rotate: [0, 8, -8, 4, 0] }}
+      transition={{
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      <motion.div
+        animate={{ opacity: [0.15, 0.35, 0.15], scale: [1, 1.2, 1] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 rounded-full bg-[#d4a574]/15 blur-2xl scale-150"
+      />
+      <Landmark
+        size={72}
+        style={{ color: "#d4a574" }}
+        strokeWidth={1.5}
+        className="relative"
+      />
+    </motion.div>
+  );
+
+  let heroHeading = "إسلام لبنان";
+  let heroSubtitle = "رفيقك الإسلامي الرقمي";
+
+  if (isRamadanTime) {
+    heroHeading = "رمضان كريم";
+    heroSubtitle = "رمضان 2026 | 1447 هـ";
+  } else if (currentPhase === "eid-al-fitr") {
+    heroHeading = "عيد الفطر مبارك";
+    heroSubtitle = "لا تنسوا صيام ست من شوال";
+  } else if (currentPhase === "eid-al-adha") {
+    heroHeading = "عيد الأضحى مبارك";
+    heroSubtitle = "تقبل الله منا ومنكم";
+  }
+
   return (
     <div
       className="overflow-x-clip"
@@ -229,7 +312,7 @@ export default function HomePage() {
           }}
         />
 
-        {/* Ambient glow behind moon */}
+        {/* Ambient glow behind icon */}
         <motion.div
           animate={{ scale: [1, 1.3, 1], opacity: [0.06, 0.12, 0.06] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -241,35 +324,14 @@ export default function HomePage() {
           <HeroStar key={i} {...star} />
         ))}
 
-        {/* Animated crescent moon */}
+        {/* Animated icon */}
         <motion.div
           initial={{ opacity: 0, scale: 0, rotate: -40 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
           transition={{ duration: 1, ease: "backOut" }}
           className="mb-6 relative"
         >
-          <motion.div
-            animate={{ rotate: [0, 8, -8, 4, 0] }}
-            transition={{
-              duration: 6,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            {/* Moon glow ring */}
-            <motion.div
-              animate={{ opacity: [0.15, 0.35, 0.15], scale: [1, 1.2, 1] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 rounded-full bg-[#d4a574]/15 blur-2xl scale-150"
-            />
-            <Moon
-              size={72}
-              style={{ color: "#d4a574" }}
-              strokeWidth={1.5}
-              fill="rgba(212,165,116,0.15)"
-              className="relative"
-            />
-          </motion.div>
+          {heroIcon}
         </motion.div>
 
         {/* Main heading */}
@@ -285,7 +347,7 @@ export default function HomePage() {
             backgroundClip: "text",
           }}
         >
-          رمضان كريم
+          {heroHeading}
         </motion.h1>
 
         {/* Decorative divider */}
@@ -304,7 +366,7 @@ export default function HomePage() {
           className="text-xl md:text-2xl"
           style={{ color: "rgba(212,165,116,0.7)" }}
         >
-          رمضان 2026 | 1447 هـ
+          {heroSubtitle}
         </motion.p>
       </section>
 
@@ -316,7 +378,7 @@ export default function HomePage() {
         transition={{ duration: 0.7, delay: 0.1 }}
         className="mx-auto max-w-3xl px-4 py-8 text-center"
       >
-        {phase === "before" && (
+        {phase === "before-ramadan" && (
           <motion.h2
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -328,7 +390,7 @@ export default function HomePage() {
           </motion.h2>
         )}
 
-        {phase === "during" && (
+        {phase === "ramadan" && (
           <motion.h2
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -336,7 +398,7 @@ export default function HomePage() {
             className="mb-6 text-2xl font-semibold md:text-3xl"
             style={{ color: "#d4a574" }}
           >
-            اليوم {mounted ? ramadanDay : "..."} من رمضان
+            اليوم {mounted ? eventDay : "..."} من رمضان
             <span
               className="mt-2 block text-lg font-normal"
               style={{ color: "rgba(212,165,116,0.6)" }}
@@ -346,7 +408,7 @@ export default function HomePage() {
           </motion.h2>
         )}
 
-        {phase === "after" && (
+        {isEid && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -363,15 +425,29 @@ export default function HomePage() {
                 backgroundClip: "text",
               }}
             >
-              عيد مبارك
+              {currentPhase === "eid-al-fitr" ? "عيد الفطر مبارك" : "عيد الأضحى مبارك"}
             </h2>
             <p style={{ color: "rgba(212,165,116,0.7)" }} className="text-lg">
-              تقبّل الله منّا ومنكم صالح الأعمال
+              {currentPhase === "eid-al-fitr"
+                ? "تقبّل الله منّا ومنكم صالح الأعمال"
+                : "تقبل الله منا ومنكم"}
             </p>
           </motion.div>
         )}
 
-        {phase !== "after" && mounted && (
+        {(phase === "shawwal-fasting" || phase === "dhul-hijjah" || phase === "normal") && (
+          <motion.h2
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="mb-6 text-2xl font-semibold md:text-3xl"
+            style={{ color: "#d4a574" }}
+          >
+            الوقت المتبقي حتى {nextEvent.name}
+          </motion.h2>
+        )}
+
+        {!isEid && mounted && (
           <div className="grid grid-cols-4 gap-3 md:gap-4">
             {countdownUnits.map((unit, i) => (
               <motion.div
@@ -401,7 +477,7 @@ export default function HomePage() {
         </motion.h2>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {quickAccessItems.map((item, i) => (
+          {activeQuickAccess.map((item, i) => (
             <motion.div
               key={item.href}
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -515,7 +591,7 @@ export default function HomePage() {
         </Card>
       </motion.section>
 
-      {/* ===================== RAMADAN INFO BANNER ===================== */}
+      {/* ===================== INFO BANNER ===================== */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -545,13 +621,22 @@ export default function HomePage() {
               fill="rgba(212,165,116,0.3)"
             />
           </motion.div>
-          <p
-            className="text-sm leading-relaxed md:text-base"
-            style={{ color: "rgba(232,232,237,0.75)" }}
-          >
-            رمضان 2026 يبدأ يوم الأربعاء 18 فبراير 2026 وينتهي يوم الخميس
-            19 مارس 2026
-          </p>
+          {isRamadanTime ? (
+            <p
+              className="text-sm leading-relaxed md:text-base"
+              style={{ color: "rgba(232,232,237,0.75)" }}
+            >
+              رمضان 2026 يبدأ يوم الأربعاء 18 فبراير 2026 وينتهي يوم الخميس
+              19 مارس 2026
+            </p>
+          ) : (
+            <p
+              className="text-sm leading-relaxed md:text-base"
+              style={{ color: "rgba(232,232,237,0.75)" }}
+            >
+              الحدث الإسلامي القادم: {nextEvent.name} — {nextEvent.hijriDate}
+            </p>
+          )}
           <motion.div
             animate={{ rotate: [360, 0] }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}

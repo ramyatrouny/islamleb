@@ -90,9 +90,9 @@ describe("isRamadanSeason", () => {
     expect(isRamadanSeason()).toBe(true);
   });
 
-  it("returns true during eid-al-fitr", () => {
+  it("returns false during eid-al-fitr (Eid is not Ramadan)", () => {
     vi.setSystemTime(new Date(2026, 2, 21));
-    expect(isRamadanSeason()).toBe(true);
+    expect(isRamadanSeason()).toBe(false);
   });
 
   it("returns false outside ramadan season", () => {

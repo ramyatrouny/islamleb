@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun,
@@ -20,6 +20,8 @@ import { toArabicNumerals } from "@/lib/formatters";
 import { adhkarData } from "@/lib/adhkar-data";
 import { staggerContainer, fadeUpItem } from "@/lib/animations";
 import { useRamadanStore } from "@/lib/store";
+import { isRamadanSeason } from "@/lib/islamic-calendar";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 /* ------------------------------------------------------------------ */
 /*  Types & data                                                       */
@@ -33,8 +35,7 @@ interface TasbihPreset {
 const morningAdhkar = adhkarData.morningAdhkar.items;
 const eveningAdhkar = adhkarData.eveningAdhkar.items;
 const ramadanDuas = adhkarData.ramadanDuas.items;
-
-const allAdhkar = [...morningAdhkar, ...eveningAdhkar, ...ramadanDuas];
+const generalDuasList = adhkarData.generalDuas.items;
 
 const tasbihPresets: TasbihPreset[] = [
   { label: "سُبْحَانَ اللَّهِ", target: 33 },
@@ -277,6 +278,16 @@ function TasbihCounter() {
 /* ------------------------------------------------------------------ */
 
 export default function AdhkarPage() {
+  const mounted = useHydrated();
+  const showRamadanDuas = mounted ? isRamadanSeason() : true;
+  const thirdTabData = showRamadanDuas ? ramadanDuas : generalDuasList;
+  const thirdTabLabel = showRamadanDuas ? "أدعية رمضان" : "أدعية عامة";
+
+  const allAdhkar = useMemo(
+    () => [...morningAdhkar, ...eveningAdhkar, ...thirdTabData],
+    [thirdTabData],
+  );
+
   const [counters, setCounters] = useState<Record<string, number>>({});
 
   const increment = useCallback((id: string, max: number) => {
@@ -376,7 +387,7 @@ export default function AdhkarPage() {
                   className="flex items-center justify-center gap-1.5 rounded-lg text-xs data-[state=active]:bg-card data-[state=active]:text-[#d4a574] data-[state=active]:shadow-sm"
                 >
                   <BookOpen className="h-4 w-4 shrink-0" />
-                  <span>رمضان</span>
+                  <span>{thirdTabLabel}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="tasbih"
@@ -404,9 +415,9 @@ export default function AdhkarPage() {
 
             <TabsContent value="ramadan">
               <p className="mb-3 text-xs font-medium text-muted-foreground/60">
-                {adhkarData.ramadanDuas.name}
+                {thirdTabLabel}
               </p>
-              {renderDhikrList(ramadanDuas)}
+              {renderDhikrList(thirdTabData)}
             </TabsContent>
 
             <TabsContent value="tasbih">

@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Moon, Menu, X, User, LogOut } from "lucide-react";
-import { NAV_ITEMS } from "@/config/navigation";
+import { NAV_ITEMS, getVisibleNavItems } from "@/config/navigation";
+import { getIslamicPhase } from "@/lib/islamic-calendar";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { isNavActive } from "@/lib/navigation-utils";
 import { UserMenu } from "@/components/user-menu";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +16,8 @@ import { useAuthModal } from "@/hooks/use-auth-modal";
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const mounted = useHydrated();
+  const navItems = mounted ? getVisibleNavItems(getIslamicPhase()) : NAV_ITEMS;
   const { user, loading, signOut } = useAuth();
   const openModal = useAuthModal((s) => s.open);
 
@@ -39,7 +43,7 @@ export default function Header() {
           {/* Desktop Navigation + User Menu */}
           <div className="hidden md:flex items-center gap-2">
             <nav className="flex items-center gap-1">
-              {NAV_ITEMS.map((link) => {
+              {navItems.map((link) => {
                 const Icon = link.icon;
                 const active = isActive(link.href);
                 return (
@@ -165,7 +169,7 @@ export default function Header() {
 
               {/* Drawer Nav Links */}
               <nav className="flex flex-col gap-1 p-4 flex-1 overflow-y-auto">
-                {NAV_ITEMS.map((link) => {
+                {navItems.map((link) => {
                   const Icon = link.icon;
                   const active = isActive(link.href);
                   return (
