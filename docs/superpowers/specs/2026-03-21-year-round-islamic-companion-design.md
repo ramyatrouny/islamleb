@@ -40,15 +40,29 @@ Introduces a seasonal phase detection system with 7 phases:
 
 **`src/lib/countdown.ts` changes:**
 - `CountdownState.phase` type expands from `"before" | "during" | "after"` to `IslamicPhase`
+- `CountdownState.ramadanDay` field renamed to `eventDay: number`:
+  - During `ramadan`: current day of Ramadan (1-30), same as current behavior
+  - During `before-ramadan`: days until Ramadan (for display)
+  - During all other phases: **0** (consumers must check phase before rendering)
 - `computeCountdownState()` delegates to `getIslamicPhase()` for phase detection
 - During `ramadan` phase: behavior identical to current `during` phase
 - During `before-ramadan`: countdown to Ramadan start (current `before` behavior)
 - During other phases: countdown to next Islamic event via `getNextIslamicEvent()`
 
+**Phase priority in `getIslamicPhase()`:** When date ranges overlap or Hijri date estimates are off by 1-2 days, phases are checked in this strict priority order:
+1. `ramadan` (checked first — if we're in Ramadan, nothing else matters)
+2. `eid-al-fitr` (3 days after Ramadan)
+3. `eid-al-adha` (10-13 Dhul Hijjah)
+4. `dhul-hijjah` (1-9 Dhul Hijjah, before Eid)
+5. `shawwal-fasting` (4-30 Shawwal)
+6. `before-ramadan` (30 days before Ramadan start)
+7. `normal` (fallback — if no other phase matches)
+
 **`src/lib/date-utils.ts` changes:**
 - Existing Ramadan-specific functions stay unchanged (they return -1 outside Ramadan already)
 - Add `getCurrentHijriMonth()` helper (fetches from Aladhan or estimates)
 - Add `getSunnahFastingDays(year: number, month: number): number[]` — returns recommended fasting days for a Gregorian month
+- Add `getAyyamAlBeed(year: number, month: number): number[]` — fetches the Hijri calendar for the given Gregorian month from Aladhan API (`/gToHCalendar/{month}/{year}`), finds dates where the Hijri day is 13, 14, or 15, and returns the corresponding Gregorian day numbers. Falls back to a simple estimation algorithm if the API is unavailable. Results are cached in localStorage with a 7-day TTL per month.
 
 ---
 
@@ -126,6 +140,19 @@ Outside Ramadan — Sunnah Fasting Mode:
 - Add `sunnahFasting: Record<string, boolean[]>` — keyed by `"YYYY-MM"`, each value is boolean array for that month's days
 - Add `toggleSunnahFasting(yearMonth: string, dayIndex: number): void`
 - Add `getSunnahFastingForMonth(yearMonth: string): boolean[]`
+- Add `generalDailyGoals: Record<string, boolean[]>` — keyed by `"YYYY-MM-DD"` (ISO date string), avoids collision with Ramadan's `dailyGoals` which is keyed by day index 0-29
+- Add `toggleGeneralGoal(dateKey: string, goalIndex: number, totalGoals: number): void`
+- Update `setSyncData` to include `sunnahFasting` and `generalDailyGoals` fields for cloud sync
+- **Store version bump:** Increment persist version from 1 to 2. Add a `migrate` function:
+  ```
+  migrate(persisted, version) {
+    if (version === 1) {
+      return { ...persisted, sunnahFasting: {}, generalDailyGoals: {} }
+    }
+    return persisted
+  }
+  ```
+  This ensures returning users with v1 localStorage data get the new fields initialized without data loss.
 - Existing `fastingDays` (30-element Ramadan array) stays unchanged
 
 **Spiritual goals adaptation (`src/config/spiritual-goals.ts`):**
@@ -199,8 +226,8 @@ Note: Reuses existing `RamadanHadith` type (consider renaming to `Hadith` since 
 - `<RamadanDatesFetcher />` stays (it only runs during Ramadan season, already has TTL caching)
 
 **`sitemap.ts`:**
-- Calendar page (`/calendar`) included only during Ramadan season
-- All other pages always included
+- Calendar page (`/calendar`) is **always included** in the sitemap (since it's a valid route year-round and sitemaps are generated at build time, not per-request — a runtime `isRamadanSeason()` check would only reflect the build date)
+- Navigation visibility handles hiding the calendar link from the UI outside Ramadan, but the route itself remains accessible via direct URL
 
 **No changes to `robots.ts`** — already correct.
 
@@ -220,11 +247,20 @@ Note: Reuses existing `RamadanHadith` type (consider renaming to `Hadith` since 
 
 1. **Phase-gated, not destructive:** All changes are conditional on the current `IslamicPhase`. During Ramadan, the app behaves exactly as it does today. Zero risk to existing Ramadan experience.
 
-2. **Additive store changes:** New `sunnahFasting` store slice sits alongside existing `fastingDays`. No migration needed — existing localStorage data is preserved.
+2. **Additive store changes with migration:** New `sunnahFasting` and `generalDailyGoals` slices sit alongside existing data. Store version bumps from 1 to 2 with a `migrate` function that initializes new fields as empty objects, preserving all existing user data.
 
 3. **Single source of truth for phase:** `getIslamicPhase()` is the one function everything consults. No scattered date checks.
 
 4. **Existing patterns preserved:** Same component structure, same styling system (gold #d4a574 + emerald #2d6a4f), same animation patterns, same RTL approach.
+
+5. **SSR hydration safety:** All phase-dependent rendering must be guarded by the existing `useHydrated()` hook. Since `getIslamicPhase()` uses `new Date()`, server and client can produce different phases at phase boundaries. The pattern is: compute phase client-side only, render a neutral skeleton on first server render. This is the same pattern already used for the countdown, extended to all 7 phases.
+
+6. **Event calendar rollover:** `getNextIslamicEvent()` must handle the case where all events in the current year (1447-1448 AH) have passed. In that case, it wraps around to estimate the first event of the next Hijri year. The estimation adds 354 days (approximate lunar year) to the corresponding event from the current year. This ensures the countdown always has a target.
+
+## Unchanged Pages
+
+- **`/ayat-al-kursi`** — stays unchanged year-round (universal Islamic content, no Ramadan-specific elements)
+- **`/quran`** — Khatma tracker stays as-is. It's already useful year-round (users can track Quran completion anytime). No changes needed for this iteration. The `completedJuz` and `resetKhatma` store methods work independently of Ramadan phase.
 
 ---
 
@@ -235,7 +271,7 @@ Note: Reuses existing `RamadanHadith` type (consider renaming to `Hadith` since 
 - `src/lib/constants.ts` — add `ISLAMIC_EVENTS`
 - `src/lib/countdown.ts` — expand phase type, delegate to `getIslamicPhase()`
 - `src/lib/date-utils.ts` — add Hijri month + Sunnah fasting day helpers
-- `src/lib/store.ts` — add `sunnahFasting` slice
+- `src/lib/store.ts` — add `sunnahFasting` + `generalDailyGoals` slices, version bump v1→v2 with migrate, update `setSyncData`
 - `src/lib/types.ts` — update `CountdownState` phase type, add Hadith alias if needed
 - `src/lib/hadith-data.ts` — add `generalHadiths` array
 - `src/lib/adhkar-data.ts` — add `generalDuas` collection
