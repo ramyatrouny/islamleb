@@ -40,7 +40,17 @@ interface RamadanStore {
     dailyGoals: Record<number, boolean[]>;
     tasbihCount: number;
     selectedCity: string;
+    sunnahFasting?: Record<string, boolean[]>;
+    generalDailyGoals?: Record<string, boolean[]>;
   }) => void;
+
+  // Sunnah fasting tracker (keyed by "YYYY-MM", array of booleans per day)
+  sunnahFasting: Record<string, boolean[]>;
+  toggleSunnahFasting: (yearMonth: string, dayIndex: number, daysInMonth: number) => void;
+
+  // General daily goals (keyed by date string, array of booleans per goal)
+  generalDailyGoals: Record<string, boolean[]>;
+  toggleGeneralGoal: (dateKey: string, goalIndex: number, totalGoals: number) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,9 +113,40 @@ export const useRamadanStore = create<RamadanStore>()(
           dailyGoals: data.dailyGoals,
           tasbihCount: data.tasbihCount,
           selectedCity: data.selectedCity,
+          sunnahFasting: data.sunnahFasting ?? {},
+          generalDailyGoals: data.generalDailyGoals ?? {},
           lastSyncedAt: Date.now(),
         }),
+
+      // ── Sunnah Fasting ────────────────────────────────────────────────
+      sunnahFasting: {},
+      toggleSunnahFasting: (yearMonth, dayIndex, daysInMonth) =>
+        set((state) => {
+          const current = state.sunnahFasting[yearMonth] ?? Array(daysInMonth).fill(false);
+          const next = [...current];
+          next[dayIndex] = !next[dayIndex];
+          return { sunnahFasting: { ...state.sunnahFasting, [yearMonth]: next } };
+        }),
+
+      // ── General Daily Goals ───────────────────────────────────────────
+      generalDailyGoals: {},
+      toggleGeneralGoal: (dateKey, goalIndex, totalGoals) =>
+        set((state) => {
+          const current = state.generalDailyGoals[dateKey] ?? Array(totalGoals).fill(false);
+          const next = [...current];
+          next[goalIndex] = !next[goalIndex];
+          return { generalDailyGoals: { ...state.generalDailyGoals, [dateKey]: next } };
+        }),
     }),
-    { name: STORAGE_KEYS.STORE, version: 1 },
+    {
+      name: STORAGE_KEYS.STORE,
+      version: 2,
+      migrate: (persisted, version) => {
+        if (version === 1) {
+          return { ...(persisted as Record<string, unknown>), sunnahFasting: {}, generalDailyGoals: {} };
+        }
+        return persisted as RamadanStore;
+      },
+    },
   ),
 );

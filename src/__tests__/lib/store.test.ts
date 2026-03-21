@@ -9,6 +9,8 @@ beforeEach(() => {
     dailyGoals: {},
     tasbihCount: 0,
     selectedCity: "Beirut",
+    sunnahFasting: {},
+    generalDailyGoals: {},
   });
 });
 
@@ -150,5 +152,71 @@ describe("setSelectedCity", () => {
   it("changes city from default", () => {
     useRamadanStore.getState().setSelectedCity("Tripoli");
     expect(useRamadanStore.getState().selectedCity).toBe("Tripoli");
+  });
+});
+
+describe("toggleSunnahFasting", () => {
+  it("creates new month entry if not present", () => {
+    useRamadanStore.getState().toggleSunnahFasting("2026-03", 0, 31);
+    const fasting = useRamadanStore.getState().sunnahFasting["2026-03"];
+    expect(fasting).toBeDefined();
+    expect(fasting[0]).toBe(true);
+    expect(fasting).toHaveLength(31);
+  });
+
+  it("toggles specific day index", () => {
+    useRamadanStore.getState().toggleSunnahFasting("2026-03", 12, 31);
+    expect(useRamadanStore.getState().sunnahFasting["2026-03"][12]).toBe(true);
+    useRamadanStore.getState().toggleSunnahFasting("2026-03", 12, 31);
+    expect(useRamadanStore.getState().sunnahFasting["2026-03"][12]).toBe(false);
+  });
+
+  it("preserves other days in same month", () => {
+    useRamadanStore.getState().toggleSunnahFasting("2026-03", 0, 31);
+    useRamadanStore.getState().toggleSunnahFasting("2026-03", 10, 31);
+    const fasting = useRamadanStore.getState().sunnahFasting["2026-03"];
+    expect(fasting[0]).toBe(true);
+    expect(fasting[10]).toBe(true);
+    expect(fasting[1]).toBe(false);
+  });
+
+  it("keeps months independent", () => {
+    useRamadanStore.getState().toggleSunnahFasting("2026-03", 0, 31);
+    useRamadanStore.getState().toggleSunnahFasting("2026-04", 0, 30);
+    expect(useRamadanStore.getState().sunnahFasting["2026-03"]).toHaveLength(31);
+    expect(useRamadanStore.getState().sunnahFasting["2026-04"]).toHaveLength(30);
+  });
+});
+
+describe("toggleGeneralGoal", () => {
+  it("creates new date entry if not present", () => {
+    useRamadanStore.getState().toggleGeneralGoal("2026-03-21", 0, 5);
+    const goals = useRamadanStore.getState().generalDailyGoals["2026-03-21"];
+    expect(goals).toBeDefined();
+    expect(goals[0]).toBe(true);
+    expect(goals).toHaveLength(5);
+  });
+
+  it("toggles specific goal index", () => {
+    useRamadanStore.getState().toggleGeneralGoal("2026-03-21", 2, 5);
+    expect(useRamadanStore.getState().generalDailyGoals["2026-03-21"][2]).toBe(true);
+    useRamadanStore.getState().toggleGeneralGoal("2026-03-21", 2, 5);
+    expect(useRamadanStore.getState().generalDailyGoals["2026-03-21"][2]).toBe(false);
+  });
+
+  it("preserves other goals on same date", () => {
+    useRamadanStore.getState().toggleGeneralGoal("2026-03-21", 0, 5);
+    useRamadanStore.getState().toggleGeneralGoal("2026-03-21", 3, 5);
+    const goals = useRamadanStore.getState().generalDailyGoals["2026-03-21"];
+    expect(goals[0]).toBe(true);
+    expect(goals[3]).toBe(true);
+    expect(goals[1]).toBe(false);
+  });
+
+  it("keeps dates independent", () => {
+    useRamadanStore.getState().toggleGeneralGoal("2026-03-21", 0, 5);
+    useRamadanStore.getState().toggleGeneralGoal("2026-03-22", 1, 3);
+    expect(useRamadanStore.getState().generalDailyGoals["2026-03-21"]).toHaveLength(5);
+    expect(useRamadanStore.getState().generalDailyGoals["2026-03-22"]).toHaveLength(3);
   });
 });
