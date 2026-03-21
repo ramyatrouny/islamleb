@@ -20,7 +20,7 @@
 | Create | `src/__tests__/lib/islamic-calendar.test.ts` | Tests for phase detection and event lookup |
 | Create | `src/__tests__/lib/store-migration.test.ts` | Tests for v1→v2 store migration |
 | Modify | `src/lib/constants.ts` | Add `ISLAMIC_EVENTS` object |
-| Modify | `src/lib/types.ts` | Add `Hadith` type alias, update `CountdownState` |
+| Modify | `src/lib/types.ts` | Add `IslamicPhase` type, `Hadith` type alias (CountdownState stays in countdown.ts) |
 | Modify | `src/lib/countdown.ts` | Use `getIslamicPhase()`, rename `ramadanDay` → `eventDay` |
 | Modify | `src/__tests__/lib/countdown.test.ts` | Update tests for new phase names and `eventDay` |
 | Modify | `src/lib/date-utils.ts` | Add `getSunnahFastingDays()`, `getAyyamAlBeed()` |
@@ -36,6 +36,12 @@
 | Modify | `src/app/tracker/page.tsx` | Dual-mode: Ramadan grid vs Sunnah monthly calendar |
 | Modify | `src/app/adhkar/page.tsx` | Swap Ramadan duas tab for general duas outside Ramadan |
 | Modify | `src/app/contact/page.tsx` | Adapt page selector to visible pages |
+
+---
+
+## Parallelization Note
+
+Tasks 1, 3, and 4 are independent and can be implemented in parallel. Tasks 2 and 5-9 depend on Task 1. Task 8 depends on Task 3.
 
 ---
 
@@ -56,7 +62,7 @@ In `src/lib/constants.ts`, add after the `RAMADAN_2026` export:
 export const ISLAMIC_EVENTS = {
   // 1447 AH
   EID_AL_FITR_START: new Date(2026, 2, 20),    // Mar 20, 2026 (1 Shawwal)
-  EID_AL_FITR_END: new Date(2026, 2, 23),       // Mar 22, 2026 (3 Shawwal)
+  EID_AL_FITR_END: new Date(2026, 2, 23),       // Mar 23, 2026 (exclusive end — day after 3 Shawwal)
   SHAWWAL_END: new Date(2026, 3, 18),            // Apr 18, 2026 (30 Shawwal)
   DHUL_HIJJAH_START: new Date(2026, 6, 17),      // Jul 17, 2026 (1 Dhul Hijjah)
   ARAFAH: new Date(2026, 6, 25),                 // Jul 25, 2026 (9 Dhul Hijjah)
@@ -69,7 +75,7 @@ export const ISLAMIC_EVENTS = {
 
 - [ ] **Step 2: Update types**
 
-In `src/lib/types.ts`, add the `IslamicPhase` type and `Hadith` alias, and update `CountdownState`:
+In `src/lib/types.ts`, add the `IslamicPhase` type and `Hadith` alias. Do NOT add `CountdownState` here — it stays in `countdown.ts` where it is currently defined and will be updated in Task 2.
 
 ```typescript
 /** Islamic calendar phase */
@@ -360,6 +366,20 @@ export function computeCountdownState(maghribTime?: string | null): CountdownSta
 }
 ```
 
+- [ ] **Step 1.5: Find and update all consumers of `ramadanDay`**
+
+The rename from `ramadanDay` to `eventDay` breaks all consumers. Search and update:
+
+```bash
+grep -r "ramadanDay" src/ --include="*.tsx" --include="*.ts"
+```
+
+Key files to update:
+- `src/app/page.tsx` line 166: change `const { phase, timeLeft, ramadanDay } = countdownState;` to `const { phase, timeLeft, eventDay } = countdownState;` and update all references to `ramadanDay` in the JSX to `eventDay`.
+- Any other file that destructures or reads `ramadanDay` from `CountdownState`.
+
+This must happen in the same commit as the countdown.ts change to avoid a broken build.
+
 - [ ] **Step 2: Update countdown tests**
 
 Replace `src/__tests__/lib/countdown.test.ts`:
@@ -409,6 +429,13 @@ describe("computeCountdownState", () => {
     vi.setSystemTime(new Date(2026, 4, 15));
     const result = computeCountdownState();
     expect(result.phase).toBe("normal");
+    expect(result.timeLeft.days).toBeGreaterThan(0);
+  });
+
+  it('returns phase "shawwal-fasting" in early April (within Shawwal)', () => {
+    vi.setSystemTime(new Date(2026, 3, 1)); // Apr 1 — within Shawwal fasting window
+    const result = computeCountdownState();
+    expect(result.phase).toBe("shawwal-fasting");
     expect(result.timeLeft.days).toBeGreaterThan(0);
   });
 
@@ -535,6 +562,15 @@ Create `src/__tests__/lib/store-migration.test.ts`:
 ```typescript
 import { describe, it, expect } from "vitest";
 
+// Extract the migrate function logic so we can test it directly.
+// This mirrors the actual migrate function in store.ts.
+function migrateStore(persisted: Record<string, unknown>, version: number) {
+  if (version === 1) {
+    return { ...persisted, sunnahFasting: {}, generalDailyGoals: {} };
+  }
+  return persisted;
+}
+
 describe("store migration v1 → v2", () => {
   it("adds sunnahFasting and generalDailyGoals to v1 state", () => {
     const v1State = {
@@ -546,16 +582,28 @@ describe("store migration v1 → v2", () => {
       lastSyncedAt: 0,
     };
 
-    // Simulate migration
-    const migrated = { ...v1State, sunnahFasting: {}, generalDailyGoals: {} };
+    const migrated = migrateStore(v1State, 1);
 
     expect(migrated.sunnahFasting).toEqual({});
     expect(migrated.generalDailyGoals).toEqual({});
     expect(migrated.completedJuz).toEqual([1, 2]); // preserved
     expect(migrated.tasbihCount).toBe(5); // preserved
   });
+
+  it("does not modify v2 state", () => {
+    const v2State = {
+      fastingDays: Array(30).fill(false),
+      sunnahFasting: { "2026-04": [true, false] },
+      generalDailyGoals: {},
+    };
+
+    const result = migrateStore(v2State, 2);
+    expect(result).toEqual(v2State); // unchanged
+  });
 });
 ```
+
+Note: The `migrateStore` function must match the `migrate` function exported or defined in `store.ts`. If you extract it as a named export from `store.ts`, import it directly instead of duplicating.
 
 - [ ] **Step 3: Update existing store tests**
 
@@ -630,8 +678,10 @@ git commit -m "feat: add sunnah fasting and general goals store slices with v1�
 In `src/lib/hadith-data.ts`, add after the `ramadanHadiths` array:
 
 ```typescript
+import type { Hadith } from "./types";
+
 /** Year-round hadiths for non-Ramadan periods */
-export const generalHadiths: RamadanHadith[] = [
+export const generalHadiths: Hadith[] = [
   {
     id: 101,
     text: "قال رسول الله ﷺ: إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
@@ -1000,7 +1050,7 @@ export const BOTTOM_NAV_ITEMS: NavItem[] = [
   { href: "/tracker", label: "المتتبع", icon: CalendarDays },
 ];
 
-const RAMADAN_PHASES: IslamicPhase[] = ["before-ramadan", "ramadan"];
+const RAMADAN_PHASES: IslamicPhase[] = ["before-ramadan", "ramadan", "eid-al-fitr"];
 
 /** Get visible nav items based on current Islamic phase */
 export function getVisibleNavItems(phase: IslamicPhase): NavItem[] {
@@ -1079,10 +1129,43 @@ import { useHydrated } from "@/hooks/use-hydrated";
 
 Note: Keep `BOTTOM_NAV_ITEMS` imported as the SSR fallback in the same file — or import it alongside the new function.
 
-- [ ] **Step 4: Run existing nav tests**
+- [ ] **Step 4: Add unit test for getVisibleNavItems**
 
-Run: `npx vitest run src/__tests__/components/bottom-nav.test.tsx src/__tests__/components/header.test.tsx`
-Expected: PASS (tests may need minor updates if they assert specific label text)
+Add to `src/__tests__/lib/navigation-utils.test.ts` (or create if needed):
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { getVisibleNavItems, getVisibleBottomNavItems } from "@/config/navigation";
+
+describe("getVisibleNavItems", () => {
+  it("includes calendar during ramadan", () => {
+    const items = getVisibleNavItems("ramadan");
+    expect(items.some((i) => i.href === "/calendar")).toBe(true);
+  });
+
+  it("hides calendar during normal phase", () => {
+    const items = getVisibleNavItems("normal");
+    expect(items.some((i) => i.href === "/calendar")).toBe(false);
+  });
+
+  it("renames tracker to صيام السنّة outside Ramadan", () => {
+    const items = getVisibleNavItems("normal");
+    const tracker = items.find((i) => i.href === "/tracker");
+    expect(tracker?.label).toBe("صيام السنّة");
+  });
+
+  it("keeps tracker label during eid-al-fitr", () => {
+    const items = getVisibleNavItems("eid-al-fitr");
+    const tracker = items.find((i) => i.href === "/tracker");
+    expect(tracker?.label).toBe("المتتبع");
+  });
+});
+```
+
+- [ ] **Step 4.5: Run all nav tests**
+
+Run: `npx vitest run src/__tests__/lib/navigation-utils.test.ts src/__tests__/components/bottom-nav.test.tsx src/__tests__/components/header.test.tsx`
+Expected: PASS (component tests may need minor updates if they assert specific label text)
 
 - [ ] **Step 5: Commit**
 
@@ -1261,10 +1344,14 @@ Find the third `TabsTrigger` and `TabsContent` that reference Ramadan duas. Repl
 - The tab trigger icon with the `thirdTabIcon`
 - The data source with `thirdTabData` instead of `ramadanDuas`
 
-Also update the `allAdhkar` computation to be dynamic:
+Also update the `allAdhkar` computation: **move it from module scope (line 37) into the component body** as a `useMemo`, since `thirdTabData` depends on `useHydrated()` state:
 ```typescript
-const allAdhkar = [...morningAdhkar, ...eveningAdhkar, ...thirdTabData];
+const allAdhkar = useMemo(
+  () => [...morningAdhkar, ...eveningAdhkar, ...thirdTabData],
+  [thirdTabData],
+);
 ```
+Add `useMemo` to the React imports if not already present.
 
 - [ ] **Step 4: Run dev server and verify**
 
@@ -1292,20 +1379,128 @@ This is the most complex UI change. The tracker page needs two completely differ
 Add at the bottom of `src/lib/date-utils.ts`:
 
 ```typescript
+/** Day type indicators for the Sunnah calendar */
+export type SunnahDayType = "monday-thursday" | "ayyam-al-beed" | "shawwal" | "arafah" | "ashura";
+
+export interface SunnahDayInfo {
+  day: number;       // 1-based Gregorian day
+  types: SunnahDayType[];
+}
+
 /**
  * Get recommended Sunnah fasting days for a Gregorian month.
- * Returns an array of day numbers (1-based) that are Mondays or Thursdays.
+ * Returns day numbers (1-based) that are Mondays or Thursdays.
  */
-export function getSunnahFastingDays(year: number, month: number): number[] {
+export function getMondayThursdayDays(year: number, month: number): number[] {
   const days: number[] = [];
   const daysInMonth = new Date(year, month, 0).getDate();
   for (let d = 1; d <= daysInMonth; d++) {
     const dow = new Date(year, month - 1, d).getDay();
-    // Monday = 1, Thursday = 4
     if (dow === 1 || dow === 4) days.push(d);
   }
   return days;
 }
+
+/**
+ * Get all Sunnah fasting day info for a month, combining multiple indicators.
+ * Checks: Monday/Thursday, Ayyam al-Beed (13-15 Hijri via Aladhan), Shawwal 6, Arafah, Ashura.
+ */
+export function getSunnahFastingDays(
+  year: number,
+  month: number,
+  ayyamAlBeedDays: number[] = [],
+): SunnahDayInfo[] {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const result: Map<number, SunnahDayType[]> = new Map();
+
+  const addType = (day: number, type: SunnahDayType) => {
+    const existing = result.get(day) ?? [];
+    existing.push(type);
+    result.set(day, existing);
+  };
+
+  // Monday & Thursday
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = new Date(year, month - 1, d).getDay();
+    if (dow === 1 || dow === 4) addType(d, "monday-thursday");
+  }
+
+  // Ayyam al-Beed (passed in from API/cache)
+  for (const d of ayyamAlBeedDays) {
+    if (d >= 1 && d <= daysInMonth) addType(d, "ayyam-al-beed");
+  }
+
+  // Shawwal 6 days (check if this month overlaps with Shawwal)
+  const { SHAWWAL_END, EID_AL_FITR_END } = ISLAMIC_EVENTS;
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 0);
+  if (monthStart < SHAWWAL_END && monthEnd >= EID_AL_FITR_END) {
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month - 1, d);
+      if (date >= EID_AL_FITR_END && date < SHAWWAL_END) addType(d, "shawwal");
+    }
+  }
+
+  // Arafah (9 Dhul Hijjah)
+  const { ARAFAH } = ISLAMIC_EVENTS;
+  if (ARAFAH.getMonth() + 1 === month && ARAFAH.getFullYear() === year) {
+    addType(ARAFAH.getDate(), "arafah");
+  }
+
+  return Array.from(result.entries())
+    .map(([day, types]) => ({ day, types }))
+    .sort((a, b) => a.day - b.day);
+}
+
+/**
+ * Fetch Ayyam al-Beed (13th, 14th, 15th Hijri) Gregorian day numbers for a month.
+ * Uses Aladhan gToHCalendar API with localStorage caching (7-day TTL).
+ */
+export async function getAyyamAlBeed(year: number, month: number): Promise<number[]> {
+  const cacheKey = `islamleb-ayyam-al-beed-${year}-${month}`;
+
+  // Check cache
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(cacheKey);
+      if (raw) {
+        const entry = JSON.parse(raw);
+        if (Date.now() - entry.timestamp < 7 * 24 * 60 * 60 * 1000) {
+          return entry.data;
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Fetch from Aladhan
+  try {
+    const res = await fetch(
+      `https://api.aladhan.com/v1/gToHCalendar/${month}/${year}`
+    );
+    if (!res.ok) throw new Error("API error");
+    const json = await res.json();
+    const days: number[] = [];
+    for (const entry of json.data ?? []) {
+      const hijriDay = parseInt(entry.hijri?.day, 10);
+      if (hijriDay >= 13 && hijriDay <= 15) {
+        days.push(parseInt(entry.gregorian?.day, 10));
+      }
+    }
+    // Cache result
+    if (typeof window !== "undefined") {
+      localStorage.setItem(cacheKey, JSON.stringify({ data: days, timestamp: Date.now() }));
+    }
+    return days;
+  } catch {
+    // Fallback: estimate (not accurate, but better than nothing)
+    return [];
+  }
+}
+```
+
+Import `ISLAMIC_EVENTS` at the top of `date-utils.ts`:
+```typescript
+import { RAMADAN_2026, ISLAMIC_EVENTS } from "./constants";
 ```
 
 - [ ] **Step 2: Add Sunnah fasting mode to tracker page**
@@ -1313,7 +1508,8 @@ export function getSunnahFastingDays(year: number, month: number): number[] {
 In `src/app/tracker/page.tsx`, add imports:
 ```typescript
 import { getIslamicPhase, isRamadanSeason } from "@/lib/islamic-calendar";
-import { getSunnahFastingDays } from "@/lib/date-utils";
+import { getSunnahFastingDays, getAyyamAlBeed } from "@/lib/date-utils";
+import type { SunnahDayInfo } from "@/lib/date-utils";
 import { RAMADAN_SPIRITUAL_GOALS, GENERAL_SPIRITUAL_GOALS } from "@/config/spiritual-goals";
 ```
 
@@ -1327,7 +1523,18 @@ const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
 const firstDayOfWeek = new Date(viewYear, viewMonth - 1, 1).getDay();
 
 const isRamadanMode = mounted ? (getIslamicPhase() === "ramadan" || getIslamicPhase() === "before-ramadan") : true;
-const sunnahDays = getSunnahFastingDays(viewYear, viewMonth);
+
+// Fetch Ayyam al-Beed from Aladhan API (cached)
+const [ayyamAlBeed, setAyyamAlBeed] = useState<number[]>([]);
+useEffect(() => {
+  if (isRamadanMode) return;
+  getAyyamAlBeed(viewYear, viewMonth).then(setAyyamAlBeed);
+}, [viewYear, viewMonth, isRamadanMode]);
+
+const sunnahDayInfos: SunnahDayInfo[] = useMemo(
+  () => getSunnahFastingDays(viewYear, viewMonth, ayyamAlBeed),
+  [viewYear, viewMonth, ayyamAlBeed],
+);
 
 // Sunnah store
 const sunnahFasting = useRamadanStore((s) => s.sunnahFasting);
@@ -1350,49 +1557,54 @@ function SunnahCalendarGrid({
   daysInMonth,
   firstDayOfWeek,
   monthFasting,
-  sunnahDays,
+  sunnahDayInfos,
   onToggle,
 }: {
   daysInMonth: number;
   firstDayOfWeek: number;
   monthFasting: boolean[];
-  sunnahDays: number[];
+  sunnahDayInfos: SunnahDayInfo[];
   onToggle: (dayIndex: number) => void;
 }) {
   const weekDays = ["أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
+  const infoMap = new Map(sunnahDayInfos.map((d) => [d.day, d.types]));
+
+  // Determine cell style based on day types
+  function getDayStyle(dayNum: number, fasted: boolean) {
+    if (fasted) return "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+    const types = infoMap.get(dayNum);
+    if (!types?.length) return "text-muted-foreground hover:bg-accent/50";
+    // Priority: arafah > shawwal > ayyam-al-beed > monday-thursday
+    if (types.includes("arafah")) return "border-2 border-[#d4a574] text-[#d4a574] bg-[#d4a574]/10 hover:bg-[#d4a574]/20";
+    if (types.includes("shawwal")) return "border border-[#d4a574]/50 border-dashed bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10";
+    if (types.includes("ayyam-al-beed")) return "border border-emerald-500/30 text-emerald-400/70 hover:bg-emerald-500/10";
+    if (types.includes("monday-thursday")) return "border border-[#d4a574]/30 text-[#d4a574]/70 hover:bg-[#d4a574]/10";
+    return "text-muted-foreground hover:bg-accent/50";
+  }
 
   return (
     <div>
-      {/* Week day headers */}
       <div className="grid grid-cols-7 gap-1 mb-2">
         {weekDays.map((d) => (
           <div key={d} className="text-center text-xs text-muted-foreground py-1">{d}</div>
         ))}
       </div>
-      {/* Day grid */}
       <div className="grid grid-cols-7 gap-1">
-        {/* Empty cells for offset */}
         {Array.from({ length: firstDayOfWeek }).map((_, i) => (
           <div key={`empty-${i}`} />
         ))}
-        {/* Day cells */}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const dayNum = i + 1;
           const fasted = monthFasting[i] ?? false;
-          const isSunnah = sunnahDays.includes(dayNum);
+          const types = infoMap.get(dayNum);
           return (
             <button
               key={dayNum}
               onClick={() => onToggle(i)}
-              className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-all ${
-                fasted
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                  : isSunnah
-                    ? "border border-[#d4a574]/30 text-[#d4a574]/70 hover:bg-[#d4a574]/10"
-                    : "text-muted-foreground hover:bg-accent/50"
-              }`}
+              className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm font-medium transition-all relative ${getDayStyle(dayNum, fasted)}`}
             >
               {toArabicNumerals(dayNum)}
+              {types?.includes("arafah") && <Star className="absolute top-0.5 end-0.5 h-2.5 w-2.5 text-[#d4a574]" />}
             </button>
           );
         })}
@@ -1455,17 +1667,29 @@ In the `TrackerPage` return statement, wrap the main content in a conditional:
           daysInMonth={daysInMonth}
           firstDayOfWeek={firstDayOfWeek}
           monthFasting={monthFasting}
-          sunnahDays={sunnahDays}
+          sunnahDayInfos={sunnahDayInfos}
           onToggle={(i) => toggleSunnahFasting(yearMonth, i, daysInMonth)}
         />
       </CardContent>
     </Card>
 
     {/* Legend */}
-    <div className="flex gap-4 justify-center text-xs text-muted-foreground">
+    <div className="flex flex-wrap gap-3 justify-center text-xs text-muted-foreground">
       <div className="flex items-center gap-1">
         <div className="w-3 h-3 rounded border border-[#d4a574]/30" />
-        <span>يوم سنّة</span>
+        <span>إثنين/خميس</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <div className="w-3 h-3 rounded border border-emerald-500/30" />
+        <span>أيام البيض</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <div className="w-3 h-3 rounded border border-[#d4a574]/50 border-dashed bg-emerald-500/5" />
+        <span>شوال</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <div className="w-3 h-3 rounded border-2 border-[#d4a574] bg-[#d4a574]/10" />
+        <span>عرفة</span>
       </div>
       <div className="flex items-center gap-1">
         <div className="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/40" />
