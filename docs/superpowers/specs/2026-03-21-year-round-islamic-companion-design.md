@@ -281,6 +281,6 @@ Note: Reuses existing `RamadanHadith` type (consider renaming to `Hadith` since 
 - `src/app/tracker/page.tsx` — dual-mode (Ramadan grid vs monthly Sunnah calendar)
 - `src/app/adhkar/page.tsx` — swap Ramadan duas tab for general duas outside Ramadan
 - `src/app/contact/page.tsx` — remove Ramadan-specific wording
-- `src/app/sitemap.ts` — conditionally include calendar page
+- `src/app/sitemap.ts` — no changes needed (calendar always included; build-time constraint)
 - `src/components/header.tsx` — use filtered nav items
 - `src/components/bottom-nav.tsx` — adaptive tracker label
