@@ -72,6 +72,18 @@ export const RAMADAN_2026 = {
   TOTAL_DAYS: cached?.totalDays ?? parseEnvInt("NEXT_PUBLIC_RAMADAN_TOTAL_DAYS", 30),
 } as const;
 
+/** Key Islamic dates for 1447-1448 AH (approximate Gregorian equivalents) */
+export const ISLAMIC_EVENTS = {
+  EID_AL_FITR_START: new Date(2026, 2, 20),
+  EID_AL_FITR_END: new Date(2026, 2, 23),
+  SHAWWAL_END: new Date(2026, 3, 18),
+  DHUL_HIJJAH_START: new Date(2026, 6, 17),
+  ARAFAH: new Date(2026, 6, 25),
+  EID_AL_ADHA_START: new Date(2026, 6, 26),
+  EID_AL_ADHA_END: new Date(2026, 6, 30),
+  NEXT_RAMADAN_START: new Date(2027, 1, 7),
+} as const;
+
 export const ARABIC_NUMERALS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"] as const;
 
 export const ARABIC_MONTHS = [

@@ -67,3 +67,16 @@ export interface RamadanHadith {
   source: string;
   topic: string;
 }
+
+/** Islamic calendar phase */
+export type IslamicPhase =
+  | "before-ramadan"
+  | "ramadan"
+  | "eid-al-fitr"
+  | "shawwal-fasting"
+  | "dhul-hijjah"
+  | "eid-al-adha"
+  | "normal";
+
+/** Hadith entry (general-purpose alias) */
+export type Hadith = RamadanHadith;
